@@ -61,7 +61,7 @@ const TravelPlanner = () => {
         budget: formData.budget,
         people: formData.people,
         preferences: formData.preferences,
-        tripType: formData.tripType,
+        tripType: formData?.tripType,
         journeyDate: formData.journeyDate,
         travelClass: formData.travelClass
       });
@@ -125,7 +125,7 @@ const TravelPlanner = () => {
 
           <div className="space-y-6">
             <RadioGroup
-              value={formData.tripType}
+              value={formData?.tripType}
               onValueChange={(value) => setFormData({ ...formData, tripType: value })}
               className="flex gap-4"
             >
@@ -147,7 +147,7 @@ const TravelPlanner = () => {
               <div className="space-y-2">
                 <Label>Origin</Label>
                 <Input
-                  value={formData.origin}
+                  value={formData?.origin}
                   onChange={(e) => setFormData({ ...formData, origin: e.target.value })}
                   placeholder="Enter origin city"
                 />
