@@ -65,21 +65,17 @@ model User {
 
 model TripPlan {
   id            String         @id @default(cuid()) // String ID
-  title         String
   author        User           @relation(fields: [authorId], references: [id])
   authorId      String
   members       User[]         @relation("TripPlanMembers")
-  startDate     DateTime
-  endDate       DateTime
   data          Json
   createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  updatedAt     DateTime       @updatedAt 
   location      String?
   photos        PhotoData[]
   vlogs         Vlog[]
   notifications Notification[]
   blogs         Blog[]
-
   @@index([authorId])
 }
 

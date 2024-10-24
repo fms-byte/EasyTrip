@@ -224,6 +224,7 @@ llm_gpt = ChatOpenAI(
     max_tokens=None,
     timeout=None,
     max_retries=2,
+    api_key="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"
 )
 output_parser=StrOutputParser()
 json_output_parser=JSONOutputParser()
