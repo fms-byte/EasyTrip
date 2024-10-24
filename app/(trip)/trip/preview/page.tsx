@@ -11,11 +11,42 @@ import {
   Building,
   Edit2,
   CheckCircle,
+  Plus,
+  Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+
+// List of available places (you can expand this)
+const AVAILABLE_PLACES = [
+  "Dhaka",
+  "Chittagong",
+  "Sylhet",
+  "Cox's Bazar",
+  "Bandarban",
+  "Rangamati",
+  "Khulna",
+  "Sundarbans",
+  "Rajshahi",
+  "Mymensingh"
+];
 
 // Utility function for formatting currency
 const formatCurrency = (amount) => {
@@ -31,22 +62,24 @@ const TripDetails = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [responseData, setResponseData] = useState(null);
   const [tripData, setTripData] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [maxBudget, setMaxBudget] = useState("");
+  const [foodPlans, setFoodPlans] = useState([]);
+  const [accommodations, setAccommodations] = useState([]);
 
   useEffect(() => {
     const storedData = localStorage.getItem("tripData");
     if (storedData) {
       const parsedData = JSON.parse(storedData);
       setResponseData(parsedData);
-
-      // Update tripData if output exists in responseData
       if (parsedData?.output) {
-        setTripData(parsedData); // Set parsed output to tripData
+        setTripData(parsedData);
+        setSelectedDate(new Date(parsedData.output.journeyDate));
+        setFoodPlans(parsedData.output.food || []);
+        setAccommodations(parsedData.output.accommodation || []);
       }
     }
   }, []);
-
-  console.log("ResponseData:", responseData);
-  console.log("Trip Data:", tripData);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -56,14 +89,19 @@ const TripDetails = () => {
   const handleSave = () => {
     setIsEditing(false);
     setSaveClick(true);
-    // Here you would typically send the updated data to your backend or local storage
-    localStorage.setItem("tripData", JSON.stringify(tripData));
+    const updatedTripData = {
+      ...tripData,
+      output: {
+        ...tripData.output,
+        food: foodPlans,
+        accommodation: accommodations,
+      },
+    };
+    localStorage.setItem("tripData", JSON.stringify(updatedTripData));
   };
 
   const handleConfirm = () => {
     setShowConfirmation(true);
-    // Simulate redirect to confirmation page or trigger any navigation
-    // window.location.href = '/confirmation';
   };
 
   const handleInputChange = (section, field, value) => {
@@ -76,65 +114,251 @@ const TripDetails = () => {
     }));
   };
 
-  // Null checks in case tripData or output isn't yet loaded
+  // Add new food plan
+  const addFoodPlan = () => {
+    const newFoodPlan = {
+      meal_type: "",
+      name: "",
+      type: "",
+      cost: 0
+    };
+    setFoodPlans([...foodPlans, newFoodPlan]);
+  };
+
+  // Remove food plan
+  const removeFoodPlan = (index) => {
+    const updatedPlans = foodPlans.filter((_, i) => i !== index);
+    setFoodPlans(updatedPlans);
+  };
+
+  // Add new accommodation
+  const addAccommodation = () => {
+    const newAccommodation = {
+      day: accommodations.length + 1,
+      type: "",
+      location: "",
+      cost_per_night: 0
+    };
+    setAccommodations([...accommodations, newAccommodation]);
+  };
+
+  // Remove accommodation
+  const removeAccommodation = (index) => {
+    const updatedAccommodations = accommodations.filter((_, i) => i !== index);
+    setAccommodations(updatedAccommodations);
+  };
+
   const output = tripData?.output || {};
 
-  // Helper component for editable fields
-  const EditableField = ({ label, value, onChange }) => (
+  // Trip Name Edit Component
+  const TripNameEdit = () => (
     <div className="space-y-2">
-      <Label>{label}</Label>
+      <Label>Trip Name</Label>
       <Input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full"
+        value={output.trip_name || ""}
+        onChange={(e) => handleInputChange("trip_name", null, e.target.value)}
+        placeholder="Enter trip name"
+        className="text-xl font-bold"
       />
     </div>
   );
 
-  // Action Buttons Component
-  const ActionButtons = () => (
-    <div className="fixed bottom-4 right-4 space-x-4">
-      {!isEditing ? (
-        <>
-          <Button
-            onClick={handleEdit}
-            className="bg-blue-500 hover:bg-blue-600"
-          >
-            <Edit2 className="w-4 h-4 mr-2" />
-            Modify Trip
-          </Button>
-          <Button
-            onClick={handleConfirm}
-            className="bg-green-500 hover:bg-green-600"
-          >
-            <CheckCircle className="w-4 h-4 mr-2" />
-            Confirm Trip
-          </Button>
-        </>
-      ) : (
-        <Button
-          onClick={handleSave}
-          className="bg-green-500 hover:bg-green-600"
-        >
-          Save Changes
-        </Button>
-      )}
+  // Location Selector Component
+  const LocationSelector = ({ value, onChange, label }) => (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger>
+          <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
+        </SelectTrigger>
+        <SelectContent>
+          {AVAILABLE_PLACES.map((place) => (
+            <SelectItem key={place} value={place}>
+              {place}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 
-  // Confirmation Alert
-  if (showConfirmation) {
-    return (
-      <div className="max-w-4xl mx-auto p-4">
-        <Alert className="bg-green-50 border-green-200">
-          <CheckCircle className="w-6 h-6 text-green-500" />
-          <AlertDescription>
-            Your trip has been confirmed! Redirecting to confirmation page...
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
+  // Update the useEffect hook where we initialize the date:
+useEffect(() => {
+  const storedData = localStorage.getItem("tripData");
+  if (storedData) {
+    const parsedData = JSON.parse(storedData);
+    setResponseData(parsedData);
+    if (parsedData?.output) {
+      setTripData(parsedData);
+      // Safely parse the date
+      if (parsedData.output.journeyDate) {
+        try {
+          const date = new Date(parsedData.output.journeyDate);
+          // Check if the date is valid
+          if (!isNaN(date.getTime())) {
+            setSelectedDate(date);
+          }
+        } catch (error) {
+          console.error("Error parsing date:", error);
+        }
+      }
+      setFoodPlans(parsedData.output.food || []);
+      setAccommodations(parsedData.output.accommodation || []);
+    }
   }
+}, []);
+
+// Update the DateSelector component to handle dates more safely:
+const DateSelector = () => (
+  <div className="space-y-2">
+    <Label>Journey Date</Label>
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" className="w-full justify-start text-left font-normal">
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          {selectedDate && !isNaN(selectedDate.getTime()) 
+            ? format(selectedDate, "PPP") 
+            : "Select date"}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0">
+        <CalendarComponent
+          mode="single"
+          selected={selectedDate}
+          onSelect={(date) => {
+            setSelectedDate(date);
+            if (date) {
+              handleInputChange("journeyDate", null, format(date, "yyyy-MM-dd"));
+            }
+          }}
+          initialFocus
+        />
+      </PopoverContent>
+    </Popover>
+  </div>
+);
+
+  // Food Plan Form Component
+  const FoodPlanForm = () => (
+    <div className="space-y-4">
+      {foodPlans.map((plan, index) => (
+        <div key={index} className="bg-gray-50 p-4 rounded-lg relative">
+          <Button
+            variant="destructive"
+            size="sm"
+            className="absolute top-2 right-2"
+            onClick={() => removeFoodPlan(index)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+          <div className="grid grid-cols-2 gap-4">
+            <Select
+              value={plan.meal_type}
+              onValueChange={(value) => {
+                const updatedPlans = [...foodPlans];
+                updatedPlans[index].meal_type = value;
+                setFoodPlans(updatedPlans);
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select meal type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="breakfast">Breakfast</SelectItem>
+                <SelectItem value="lunch">Lunch</SelectItem>
+                <SelectItem value="dinner">Dinner</SelectItem>
+              </SelectContent>
+            </Select>
+            <Input
+              placeholder="Restaurant name"
+              value={plan.name}
+              onChange={(e) => {
+                const updatedPlans = [...foodPlans];
+                updatedPlans[index].name = e.target.value;
+                setFoodPlans(updatedPlans);
+              }}
+            />
+            <Input
+              placeholder="Cuisine type"
+              value={plan.type}
+              onChange={(e) => {
+                const updatedPlans = [...foodPlans];
+                updatedPlans[index].type = e.target.value;
+                setFoodPlans(updatedPlans);
+              }}
+            />
+            <Input
+              type="number"
+              placeholder="Cost"
+              value={plan.cost}
+              onChange={(e) => {
+                const updatedPlans = [...foodPlans];
+                updatedPlans[index].cost = parseInt(e.target.value);
+                setFoodPlans(updatedPlans);
+              }}
+            />
+          </div>
+        </div>
+      ))}
+      <Button onClick={addFoodPlan} className="w-full">
+        <Plus className="mr-2 h-4 w-4" /> Add Food Plan
+      </Button>
+    </div>
+  );
+
+  // Accommodation Form Component
+  const AccommodationForm = () => (
+    <div className="space-y-4">
+      {accommodations.map((accommodation, index) => (
+        <div key={index} className="bg-gray-50 p-4 rounded-lg relative">
+          <Button
+            variant="destructive"
+            size="sm"
+            className="absolute top-2 right-2"
+            onClick={() => removeAccommodation(index)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              placeholder="Hotel type"
+              value={accommodation.type}
+              onChange={(e) => {
+                const updatedAccommodations = [...accommodations];
+                updatedAccommodations[index].type = e.target.value;
+                setAccommodations(updatedAccommodations);
+              }}
+            />
+            <Input
+              placeholder="Location"
+              value={accommodation.location}
+              onChange={(e) => {
+                const updatedAccommodations = [...accommodations];
+                updatedAccommodations[index].location = e.target.value;
+                setAccommodations(updatedAccommodations);
+              }}
+            />
+            <Input
+              type="number"
+              placeholder="Cost per night"
+              value={accommodation.cost_per_night}
+              onChange={(e) => {
+                const updatedAccommodations = [...accommodations];
+                updatedAccommodations[index].cost_per_night = parseInt(e.target.value);
+                setAccommodations(updatedAccommodations);
+              }}
+            />
+          </div>
+        </div>
+      ))}
+      <Button onClick={addAccommodation} className="w-full">
+        <Plus className="mr-2 h-4 w-4" /> Add Accommodation
+      </Button>
+    </div>
+  );
+
+  // Rest of your component remains the same, but update the respective sections
+  // to use the new components when isEditing is true
 
   return (
     <div className="h-screen overflow-auto">
@@ -143,13 +367,7 @@ const TripDetails = () => {
         <Card>
           <CardHeader>
             {isEditing ? (
-              <EditableField
-                label="Trip Name"
-                value={output.trip_name || ""}
-                onChange={(value) =>
-                  handleInputChange("trip_name", null, value)
-                }
-              />
+              <TripNameEdit />
             ) : (
               <CardTitle className="text-xl font-bold">
                 {output.trip_name}
@@ -160,27 +378,17 @@ const TripDetails = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {isEditing ? (
                 <>
-                  <EditableField
+                  <LocationSelector
                     label="Origin"
-                    value={output.origin || ""}
-                    onChange={(value) =>
-                      handleInputChange("origin", null, value)
-                    }
+                    value={output.origin}
+                    onChange={(value) => handleInputChange("origin", null, value)}
                   />
-                  <EditableField
+                  <LocationSelector
                     label="Destination"
-                    value={output.destination || ""}
-                    onChange={(value) =>
-                      handleInputChange("destination", null, value)
-                    }
+                    value={output.destination}
+                    onChange={(value) => handleInputChange("destination", null, value)}
                   />
-                  <EditableField
-                    label="Journey Date"
-                    value={output.journeyDate || ""}
-                    onChange={(value) =>
-                      handleInputChange("journeyDate", null, value)
-                    }
-                  />
+                  <DateSelector />
                 </>
               ) : (
                 <>
@@ -215,129 +423,48 @@ const TripDetails = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {Object.entries(output?.budget?.breakdown || {}).map(
-                ([key, value]) => (
-                  <div
-                    key={key}
-                    className="text-center p-2 bg-gray-50 rounded-lg"
-                  >
-                    <div className="font-medium capitalize">{key}</div>
-                    {isEditing ? (
-                      <Input
-                        type="number"
-                        value={value}
-                        onChange={(e) => {
-                          const newBreakdown = {
-                            ...output.budget.breakdown,
-                            [key]: parseInt(e.target.value),
-                          };
-                          setTripData((prev) => ({
-                            ...prev,
-                            output: {
-                              ...prev.output,
-                              budget: {
-                                ...prev.output.budget,
-                                breakdown: newBreakdown,
-                                total: Object.values(newBreakdown).reduce(
-                                  (a, b) => a + b,
-                                  0,
-                                ),
-                              },
-                            },
-                          }));
-                        }}
-                        className="mt-2"
-                      />
-                    ) : (
-                      <div className="text-lg font-bold text-green-600">
-                        {formatCurrency(value)}
-                      </div>
-                    )}
-                  </div>
-                ),
-              )}
-            </div>
-            <div className="mt-4 text-center font-bold text-xl">
-              Total: {formatCurrency(output?.budget?.total || 0)}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Journey Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">
-              <div className="flex items-center gap-2">
-                <Clock className="text-purple-500" />
-                Journey Details
+            {(!output?.budget?.breakdown || Object.keys(output?.budget?.breakdown).length === 0) && isEditing ? (
+              <div className="space-y-4">
+                <Label>Maximum Budget</Label>
+                <Input
+                  type="number"
+                  value={maxBudget}
+                  onChange={(e) => setMaxBudget(e.target.value)}
+                  placeholder="Enter maximum budget"
+                />
               </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {isEditing ? (
-                <div className="space-y-4">
-                  <EditableField
-                    label="Departure Time"
-                    value={output.checkpoints[0].logistics.departure_time}
-                    onChange={(value) => {
-                      const newCheckpoints = [...output.checkpoints];
-                      newCheckpoints[0].logistics.departure_time = value;
-                      handleInputChange("checkpoints", null, newCheckpoints);
-                    }}
-                  />
-                  <EditableField
-                    label="Arrival Time"
-                    value={output.checkpoints[0].logistics.arrival_time}
-                    onChange={(value) => {
-                      const newCheckpoints = [...output.checkpoints];
-                      newCheckpoints[0].logistics.arrival_time = value;
-                      handleInputChange("checkpoints", null, newCheckpoints);
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="flex justify-between items-center">
-                  {output?.checkpoints?.length > 0 ? (
-                    <>
-                      <span>
-                        Departure:{" "}
-                        {output.checkpoints[0].logistics.departure_time}
-                      </span>
-                      <span>
-                        Arrival: {output.checkpoints[0].logistics.arrival_time}
-                      </span>
-                    </>
-                  ) : (
-                    <span>No checkpoints available</span>
-                  )}
-                </div>
-              )}
-              <div className="bg-blue-50 p-3 rounded-lg mt-2">
-                {isEditing ? (
-                  <EditableField
-                    label="Travel Tips"
-                    value={output.checkpoints[0].logistics.tips}
-                    onChange={(value) => {
-                      const newCheckpoints = [...output.checkpoints];
-                      newCheckpoints[0].logistics.tips = value;
-                      handleInputChange("checkpoints", null, newCheckpoints);
-                    }}
-                  />
-                ) : (
-                  <>
-                    {output?.checkpoints?.length > 0 ? (
-                      <p className="text-sm italic">
-                        {output.checkpoints[0].logistics.tips}
-                      </p>
-                    ) : (
-                      <span>No checkpoints available</span>
-                    )}
-                  </>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {Object.entries(output?.budget?.breakdown || {}).map(
+                  ([key, value]) => (
+                    <div
+                      key={key}
+                      className="text-center p-2 bg-gray-50 rounded-lg"
+                    >
+                      <div className="font-medium capitalize">{key}</div>
+                      {isEditing ? (
+                        <Input
+                          type="number"
+                          value={value}
+                          onChange={(e) => {
+                            const newBreakdown = {
+                              ...output.budget.breakdown,
+                              [key]: parseInt(e.target.value),
+                            };
+                            handleInputChange("budget", "breakdown", newBreakdown);
+                          }}
+                          className="mt-2"
+                        />
+                      ) : (
+                        <div className="text-lg font-bold text-green-600">
+                          {formatCurrency(value)}
+                        </div>
+                      )}
+                    </div>
+                  )
                 )}
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
@@ -352,65 +479,22 @@ const TripDetails = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {output?.food?.[1] ? (
-                Object.entries(output.food[1]).map(([meal, details]) => (
-                  <div key={meal} className="bg-gray-50 p-3 rounded-lg">
-                    <div className="font-medium capitalize">{meal}</div>
-                    {isEditing ? (
-                      <div className="space-y-2 mt-2">
-                        <Input
-                          value={details.name}
-                          onChange={(e) => {
-                            const newFood = { ...output.food };
-                            newFood[1][
-                              meal as "breakfast" | "launch" | "dinner"
-                            ].name = e.target.value;
-                            handleInputChange("food", null, newFood);
-                          }}
-                          placeholder="Restaurant Name"
-                        />
-                        <Input
-                          value={details.type}
-                          onChange={(e) => {
-                            const newFood = { ...output.food };
-                            newFood[1][
-                              meal as "breakfast" | "launch" | "dinner"
-                            ].type = e.target.value;
-                            handleInputChange("food", null, newFood);
-                          }}
-                          placeholder="Cuisine Type"
-                        />
-                        <Input
-                          type="number"
-                          value={details.cost}
-                          onChange={(e) => {
-                            const newFood = { ...output.food };
-                            newFood[1][
-                              meal as "breakfast" | "launch" | "dinner"
-                            ].cost = parseInt(e.target.value);
-                            handleInputChange("food", null, newFood);
-                          }}
-                          placeholder="Cost"
-                        />
-                      </div>
-                    ) : (
-                      <>
-                        <div>{details.name}</div>
-                        <div className="text-sm text-gray-600">
-                          {details.type}
-                        </div>
-                        <div className="font-bold text-orange-600">
-                          {formatCurrency(details.cost)}
-                        </div>
-                      </>
-                    )}
+            {isEditing ? (
+              <FoodPlanForm />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {foodPlans.map((plan, index) => (
+                  <div key={index} className="bg-gray-50 p-3 rounded-lg">
+                    <div className="font-medium capitalize">{plan.meal_type}</div>
+                    <div>{plan.name}</div>
+                    <div className="text-sm text-gray-600">{plan.type}</div>
+                    <div className="font-bold text-orange-600">
+                      {formatCurrency(plan.cost)}
+                    </div>
                   </div>
-                ))
-              ) : (
-                <div>No food plan available</div>
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -425,85 +509,28 @@ const TripDetails = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {output?.accommodation ? (
-                Object.entries(output.accommodation).map(([day, details]) => (
-                  <div key={day} className="bg-gray-50 p-3 rounded-lg">
-                    <div className="font-medium">Day {day}</div>
-                    {isEditing ? (
-                      <div className="space-y-2 mt-2">
-                        <Input
-                          value={details.type}
-                          onChange={(e) => {
-                            const newAccommodation = {
-                              ...output.accommodation,
-                            };
-                            newAccommodation[
-                              day as keyof typeof output.accommodation
-                            ].type = e.target.value;
-                            handleInputChange(
-                              "accommodation",
-                              null,
-                              newAccommodation,
-                            );
-                          }}
-                          placeholder="Hotel Type"
-                        />
-                        <Input
-                          value={details.location}
-                          onChange={(e) => {
-                            const newAccommodation = {
-                              ...output.accommodation,
-                            };
-                            newAccommodation[
-                              day as keyof typeof output.accommodation
-                            ].location = e.target.value;
-                            handleInputChange(
-                              "accommodation",
-                              null,
-                              newAccommodation,
-                            );
-                          }}
-                          placeholder="Location"
-                        />
-                        <Input
-                          type="number"
-                          value={details.cost_per_night}
-                          onChange={(e) => {
-                            const newAccommodation = {
-                              ...output.accommodation,
-                            };
-                            newAccommodation[
-                              day as keyof typeof output.accommodation
-                            ].cost_per_night = parseInt(e.target.value);
-                            handleInputChange(
-                              "accommodation",
-                              null,
-                              newAccommodation,
-                            );
-                          }}
-                          placeholder="Cost per Night"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex justify-between items-center mt-2">
-                        <div>
-                          <div>{details.type}</div>
-                          <div className="text-sm text-gray-600">
-                            {details.location}
-                          </div>
-                        </div>
-                        <div className="font-bold text-indigo-600">
-                          {formatCurrency(details.cost_per_night)}
+            {isEditing ? (
+              <AccommodationForm />
+            ) : (
+              <div className="space-y-4">
+                {accommodations.map((accommodation, index) => (
+                  <div key={index} className="bg-gray-50 p-3 rounded-lg">
+                    <div className="font-medium">Day {accommodation.day}</div>
+                    <div className="flex justify-between items-center mt-2">
+                      <div>
+                        <div>{accommodation.type}</div>
+                        <div className="text-sm text-gray-600">
+                          {accommodation.location}
                         </div>
                       </div>
-                    )}
+                      <div className="font-bold text-indigo-600">
+                        {formatCurrency(accommodation.cost_per_night)}
+                      </div>
+                    </div>
                   </div>
-                ))
-              ) : (
-                <div>No accommodation information available</div>
-              )}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -528,7 +555,33 @@ const TripDetails = () => {
         )}
 
         {/* Action Buttons */}
-        <ActionButtons />
+        <div className="fixed bottom-4 right-4 space-x-4">
+          {!isEditing ? (
+            <>
+              <Button
+                onClick={handleEdit}
+                className="bg-blue-500 hover:bg-blue-600"
+              >
+                <Edit2 className="w-4 h-4 mr-2" />
+                Modify Trip
+              </Button>
+              <Button
+                onClick={handleConfirm}
+                className="bg-green-500 hover:bg-green-600"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Confirm Trip
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={handleSave}
+              className="bg-green-500 hover:bg-green-600"
+            >
+              Save Changes
+            </Button>
+          )}
+        </div>
 
         {/* Success Message After Save */}
         {!isEditing && saveClick && (
@@ -536,6 +589,18 @@ const TripDetails = () => {
             <Alert className="bg-green-50 border-green-200 shadow-lg">
               <CheckCircle className="w-4 h-4 text-green-500" />
               <AlertDescription>Changes saved successfully!</AlertDescription>
+            </Alert>
+          </div>
+        )}
+
+        {/* Confirmation Alert */}
+        {showConfirmation && (
+          <div className="max-w-4xl mx-auto p-4">
+            <Alert className="bg-green-50 border-green-200">
+              <CheckCircle className="w-6 h-6 text-green-500" />
+              <AlertDescription>
+                Your trip has been confirmed! Redirecting to confirmation page...
+              </AlertDescription>
             </Alert>
           </div>
         )}

@@ -28,18 +28,6 @@ const BookingCard = () => {
     { location: "Kuakata", latitude: 21.8167, longitude: 90.1167 },
   ];
 
-  const dummyData2 = {
-    tripType: "oneWay",
-    origin: "Dhaka",
-    destination: "Saint Martin",
-    journeyDate: "29 Oct 24",
-    days: 2,
-    budget: 1000,
-    people: 1,
-    preferences: "bus",
-    travelClass: "Economy",
-  };
-
   const dummyData = {
     trip_name: "Dhaka to Sylhet 3 days trip with 5 people to enjoy the city",
     origin: "Dhaka",
@@ -400,7 +388,7 @@ export default function Homepage() {
   const [tripType, setTripType] = useState("oneWay");
   const [showForm, setShowForm] = useState(false);
   const [showInputField, setShowInputField] = useState(true);
-
+  const router = useRouter();
   // Array of suggestions
   const suggestions = [
     "Inspire me where to go",
@@ -460,7 +448,7 @@ export default function Homepage() {
     setShowForm(true); // Show the booking form
   };
 
-  const handleGeneratePlan = (inputText: string) => {
+  const handleGeneratePlan = async (inputText: string) => {
     // API ENDPOINT: /extract_trip_data/invoke
     const tripPrompt = {
       trip_text: inputText,
@@ -470,6 +458,34 @@ export default function Homepage() {
       input: tripPrompt,
     };
     console.log("Trip Data:", tripData);
+    // API Call
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_TRIP_PLANNER_API}/extract_trip_data/invoke`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(tripData),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("API request failed");
+      }
+
+      const data = await response.json();
+      console.log("API Response:", data);
+
+      // Store response data in local storage
+      localStorage.setItem('tripData', JSON.stringify(data));
+
+      // Navigate to preview page if successful
+      router.push("/trip/preview");
+    } catch (error) {
+      console.error("Error during API call:", error);
+    }
   };
 
   return (

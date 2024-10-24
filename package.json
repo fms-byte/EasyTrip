@@ -72,6 +72,7 @@
     "framer-motion": "^11.11.9",
     "http-proxy-middleware": "^3.0.2",
     "ioredis": "^5.4.1",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.291.0",
     "luxon": "^3.4.4",
     "million": "^2.6.4",
