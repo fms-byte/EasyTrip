@@ -6,6 +6,7 @@ import * as lancedb from "@lancedb/lancedb";
 import * as arrow from "apache-arrow";
 import { feature } from "@turf/turf";
 import { title } from "process";
+import { stat } from "fs";
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
     
   try {
     const body = await request.json();
-    const { email, tripPlanId, name, content } = body;
+    const { email, tripPlanId, name, content, title } = body;
 
     if ( !tripPlanId) {
       return NextResponse.json(
@@ -116,6 +117,22 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    await prisma.notification.create({
+      data: {
+        content: `New blog post created by ${name} for trip: ${tripPlan?.data?.name} : ${title}`, 
+        tripPlan:{
+          connect: {
+            id: tripPlanId,
+          },
+        }
+      },
+    });
+
+
+    return NextResponse.json(
+      { status: "success" },
+      { status: 200 },
+    );
 
     }
   

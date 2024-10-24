@@ -1,9 +1,7 @@
 /* eslint-disable import/no-unresolved */
 import tripRouter from '@/server/trip-route'; 
 import notificationRouter from '@/server/notification-route';
-import orderRouter from '@/server/order-route'; 
-
-
+ 
 import { t } from '@/utils/trpc-server';
 import { createServerSideHelpers } from '@trpc/react-query/server';
 import SuperJSON from 'superjson';
@@ -17,7 +15,7 @@ const healthCheckerRouter = t.router({
   }),
 });
 
-export const appRouter = t.mergeRouters(orderRouter, healthCheckerRouter, tripRouter, notificationRouter);
+export const appRouter = t.mergeRouters( healthCheckerRouter, tripRouter, notificationRouter);
 
 export const createSSRHelper = () =>
   createServerSideHelpers({

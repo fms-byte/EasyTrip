@@ -199,6 +199,17 @@ export async function POST(request: NextRequest) {
       console.log("Table created and data added");
     }
 
+    await prisma.notification.create({
+        data: {
+          content: `New Photo added by ${name}`,
+          tripPlan:{
+            connect: {
+              id: tripPlanId,
+            },
+          }
+        },
+      });
+
     return NextResponse.json(
       { message: "Image processed successfully", id: tripPlanId },
       { status: 201 },
