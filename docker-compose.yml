@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  easy-trip:
+    build: 
+      context: .
+      dockerfile: ./Dockerfile 
+    env_file: ./.env 
+    ports:
+      - "7000:7000"
+    
