@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
@@ -19,6 +20,14 @@ app=FastAPI(
     title="Easy Trip API Server",
     version="1.0",
     description="API Server of Easy Trip Planner"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 ## Prompt Template
@@ -43,23 +52,23 @@ trip_plan_prompt=ChatPromptTemplate.from_messages(
             'trip_name': 'Dhaka to Sajek 5 days trip with 2 people to enjoy the hill',
             'origin': 'Dhaka',
             'destination': 'Sajek',
-            'days': 5,
-            'budget': 5000,
-            'people': 2,
+            'days': '5',
+            'budget': '5000',
+            'people': '2',
             'preferences': 'hill',
             'tripType': 'oneWay',
-            'journeyDate': 24/10/2024,
+            'journeyDate': '24/10/2024',
             'travelClass': 'economy',
             'checkpoints': [ 
                 'origin': 
                     'location': 'Dhaka',
-                    'latitude': 23.8103,
-                    'longitude': 90.4125
+                    'latitude': '23.8103',
+                    'longitude': '90.4125'
                 ,
                 'destination': 
                     'location': 'Sylhet',
-                    'latitude': 24.8949,
-                    'longitude': 91.8687
+                    'latitude': '24.8949',
+                    'longitude': '91.8687'
                 ,
                 'logistics': 
                     'departure_time': '06:00 AM',
@@ -70,13 +79,13 @@ trip_plan_prompt=ChatPromptTemplate.from_messages(
                 
                 'origin': 
                     'location': 'Sylhet',
-                    'latitude': 24.8949,
-                    'longitude': 91.8687
+                    'latitude': '24.8949',
+                    'longitude': '91.8687'
                 ,
                 'destination': 
                     'location': 'Sajek',
-                    'latitude': 23.3814,
-                    'longitude': 92.2938
+                    'latitude': '23.3814',
+                    'longitude': '92.2938'
                 ,
                 'logistics': 
                     'departure_time': '07:00 AM',
@@ -90,17 +99,17 @@ trip_plan_prompt=ChatPromptTemplate.from_messages(
                 'breakfast':
                             'name': 'BFC',
                             'type': 'Fast Food',
-                            'cost': 400
+                            'cost': '400'
                         ,
                 'launch':
                             'name': 'Local Restaurants',
                             'type': 'Bengali Cuisine',
-                            'cost': 250
+                            'cost': '250'
                         ,
                 'dinner':
                         'name': 'Continental Hotel',
                         'type': 'Chinese Dish',
-                        'cost': 550
+                        'cost': '550'
                         
                 ,
             ,
@@ -108,33 +117,33 @@ trip_plan_prompt=ChatPromptTemplate.from_messages(
                 '1': 
                 'location': 'Sylhet',
                 'type': 'Budget hotel',
-                'cost_per_night': 800
+                'cost_per_night': '800'
                 ,
                 '2': 
                 'location': 'Sajek',
                 'type': 'Cottage',
-                'cost_per_night': 1000
+                'cost_per_night': '1000'
                 ,
                 '3': 
                 'location': 'Sajek',
                 'type': 'Cottage',
-                'cost_per_night': 1000
+                'cost_per_night': '1000'
                 ,
                 '4': 
                 'location': 'Sylhet',
                 'type': 'Budget hotel',
-                'cost_per_night': 800
+                'cost_per_night': '800'
                 
             ,
             'budget': 
-                'total': 5100,
+                'total': '5100',
                 'breakdown': 
-                'transportation': 1500,
-                'food': 1500,
-                'accommodation': 2000,
-                'miscellaneous': 100
+                'transportation': '1500',
+                'food': '1500',
+                'accommodation': '2000',
+                'miscellaneous': '100'
             """),
-       ("user","create a trip plan for {origin} to {destination} for {days} days with {people} people and budget {budget} taka. preferences are {preferences}. tripType is {tripType} and journeyDate is {journeyDate}. travelClass is {travelClass}. default value for tripType is oneWay, journeyDate is today, travelClass is economy.")
+       ("user","create a trip plan for {origin} to {destination} for {days} days with {people} people and budget {budget} taka. preferences are {preferences}. tripType is {tripType} and journeyDate is {journeyDate}. travelClass is {travelClass}. default value for tripType is oneWay, journeyDate is today, travelClass is economy. all values will in string. use blank instead of null")
     ]
 )
 
