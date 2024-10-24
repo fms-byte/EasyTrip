@@ -5,10 +5,12 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js" 
+  previewFeatures = ["postgresqlExtensions"] 
 }
 
 generator dbml {
   provider        = "prisma-dbml-generator" 
+  extensions = [pgvector(map: "vector", schema: "extensions")]  
 }
 
 model Account {
@@ -54,7 +56,7 @@ model User {
   sessions      Session[]
   blogs         Blog[]
   volgs         Vlog[]
-  photos        Photo[]
+  photos        PhotoData[]
   tripPlans     TripPlan[]
   membersOfTrip TripPlan[] @relation("TripPlanMembers")
 
@@ -73,7 +75,7 @@ model TripPlan {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   location      String?
-  photos        Photo[]
+  photos        PhotoData[]
   vlogs         Vlog[]
   notifications Notification[]
   blogs         Blog[]
@@ -117,7 +119,7 @@ model Vlog {
   updatedAt  DateTime @updatedAt
 }
 
-model Photo {
+model PhotoData {
   id           String                @id @default(cuid()) // String ID
   url          String
   author       User                  @relation(fields: [authorId], references: [id])
@@ -126,8 +128,9 @@ model Photo {
   authorId     String
   caption      String?
   status       STAUS                 @default(PRIVATE)
-  // vector       Unsupported("vector")
+  // imageEmbedding            Unsupported("vector")?
   location     String?
+  features     String?      
   timeInString String?
   device       String?
   createdAt    DateTime              @default(now())

@@ -3,27 +3,20 @@
 import prisma from "@/prisma/prisma-client";
 import { TRPCError } from "@trpc/server";
 import { FilterQueryInput } from "./trip-schema";  
-import NodeCache from "node-cache";
+import NodeCache from "node-cache"; 
+import { trpc } from "@/utils/trpc";
  
 const cache = new NodeCache({ stdTTL: 60 });
 
   
 
-export const getTripHandler = async ({ filterQuery }: { filterQuery: FilterQueryInput }) => {
+export const getTripHandler = async ({ filterQuery }: { filterQuery: any }) => {
   try {
     
-    const { env, from, to, symbol, start_hh = 9, start_mm = 30, end_hh = 16, end_mm = 0 } = filterQuery;
+    const { tripPlanId } = filterQuery;
 
-   
-    const startOfDay = new Date(from); 
-    startOfDay.setUTCHours(start_hh, start_mm, 0, 0);
-    const endOfDay = new Date(to); 
-    endOfDay.setUTCHours(end_hh + 5, end_mm, 0, 0);
- 
-    // key will be as MGOL_2024-02-01_2024-02-01_09_30_16_00
-    const cacheKey = `${symbol}_${startOfDay.toISOString()}_${endOfDay.toISOString()}_${start_hh}_${start_mm}_${end_hh}_${end_mm}`;
-    const cachedResult = cache.get(cacheKey);
- 
+    const cachedResult = cache.get(tripPlanId);
+  
     if (cachedResult) {
       console.log("Cache hit: sending cached result");
       return cachedResult;
@@ -32,10 +25,16 @@ export const getTripHandler = async ({ filterQuery }: { filterQuery: FilterQuery
     }
 
  
-    const result = {
-       
-    };  
-    cache.set(cacheKey, result); 
+    const result = await prisma.tripPlan.findUnique({
+      where: {
+        id: tripPlanId,
+      },
+      include: {
+        members : true,
+        notifications: true,
+      },
+    });
+    cache.set(tripPlanId, result); 
     return result;
 
   } catch (err: any) {
