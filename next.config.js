@@ -45,6 +45,10 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   transpilePackages: ['react-leaflet-draw'],
+  webpack(config) {
+    config.externals.push({ '@lancedb/lancedb': '@lancedb/lancedb' })
+    return config;
+  }
 };
 
 module.exports = nextConfig

@@ -42,4 +42,7 @@ next-env.d.ts
 ee_credentials
 service_key.json
 
+
+# package-lock.json
+package-lock.json
  
