@@ -1,14 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import {
-  Plane,
-  Building2,
-  Palmtree,
-  FileText,
   ArrowLeftRight,
   ChevronDown,
-  Search,
-  Menu,
   User,
   Check,
   X,
@@ -34,16 +28,87 @@ const BookingCard = () => {
     { location: "Kuakata", latitude: 21.8167, longitude: 90.1167 },
   ];
 
-  const dummyData = {
+  const dummyData2 = {
     tripType: "oneWay",
     origin: "Dhaka",
     destination: "Saint Martin",
     journeyDate: "29 Oct 24",
     days: 2,
-    max_budget: 1000,
+    budget: 1000,
     people: 1,
     preferences: "bus",
     travelClass: "Economy",
+  };
+
+  const dummyData = {
+    trip_name: "Dhaka to Sylhet 3 days trip with 5 people to enjoy the city",
+    origin: "Dhaka",
+    destination: "Sylhet",
+    days: 3,
+    budget: {
+      total: 5000,
+      breakdown: {
+        transportation: 1500,
+        food: 1500,
+        accommodation: 1600,
+        miscellaneous: 400,
+      },
+    },
+    people: 5,
+    preferences: "city",
+    tripType: "oneWay",
+    journeyDate: "10/26/2024",
+    travelClass: "economy",
+    checkpoints: [
+      {
+        origin: {
+          location: "Dhaka",
+          latitude: 23.8103,
+          longitude: 90.4125,
+        },
+        destination: {
+          location: "Sylhet",
+          latitude: 24.8949,
+          longitude: 91.8687,
+        },
+        logistics: {
+          departure_time: "06:00 AM",
+          arrival_time: "12:00 PM",
+          tips: "Take an early morning bus from Dhaka to Sylhet to enjoy the scenic beauty along the way.",
+        },
+      },
+    ],
+    food: {
+      1: {
+        breakfast: {
+          name: "BFC",
+          type: "Fast Food",
+          cost: 400,
+        },
+        launch: {
+          name: "Local Restaurants",
+          type: "Bengali Cuisine",
+          cost: 250,
+        },
+        dinner: {
+          name: "Continental Hotel",
+          type: "Chinese Dish",
+          cost: 550,
+        },
+      },
+    },
+    accommodation: {
+      1: {
+        location: "Sylhet",
+        type: "Budget hotel",
+        cost_per_night: 800,
+      },
+      2: {
+        location: "Sylhet",
+        type: "Budget hotel",
+        cost_per_night: 800,
+      },
+    },
   };
 
   // Form state variables
@@ -58,6 +123,8 @@ const BookingCard = () => {
     moment(dummyData.journeyDate),
   );
 
+  const router = useRouter();
+
   // Handle form submission
   const handleSearch = () => {
     const formData = {
@@ -65,11 +132,20 @@ const BookingCard = () => {
       origin,
       destination,
       journeyDate,
-      day,
-      passengers,
+      days: day,
+      budget: 1000,
+      people: passengers,
+      preferences: "",
       travelClass,
     };
     console.log("Selected Form Data:", formData);
+
+    // API ENDPOINT: /trip_plan/invoke
+    const tripPlan = {
+      input: formData,
+    };
+    console.log("Trip Plan:", tripPlan);
+    router.push("/trip/preview");
   };
 
   const handleDateChange = (date) => {
@@ -118,7 +194,7 @@ const BookingCard = () => {
                   FROM
                 </label>
                 <select
-                title="origin"
+                  title="origin"
                   value={origin}
                   onChange={(e) => setOrigin(e.target.value)}
                   className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-lg font-semibold text-gray-900"
@@ -138,7 +214,7 @@ const BookingCard = () => {
                   TO
                 </label>
                 <select
-                title="destination"
+                  title="destination"
                   value={destination}
                   onChange={(e) => setDestination(e.target.value)}
                   className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-lg font-semibold text-gray-900"
@@ -200,7 +276,7 @@ const BookingCard = () => {
                 CLASS
               </label>
               <select
-              title="travelClass"
+                title="travelClass"
                 value={travelClass}
                 onChange={(e) => setTravelClass(e.target.value)}
                 className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm text-gray-700"
@@ -323,6 +399,18 @@ export default function Homepage() {
     setShowForm(true); // Show the booking form
   };
 
+  const handleGeneratePlan = (inputText: string) => {
+    // API ENDPOINT: /extract_trip_data/invoke
+    const tripPrompt = {
+      trip_text: inputText,
+    };
+    console.log("Trip Prompt:", tripPrompt);
+    const tripData = {
+      input: tripPrompt,
+    };
+    console.log("Trip Data:", tripData);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 via-purple-100 to-purple-200">
       <Header />
@@ -346,7 +434,7 @@ export default function Homepage() {
                 />
                 <button
                   className="flex font-bold items-center gap-1 bg-purple-500 text-white px-5 py-3 rounded-full shadow-md hover:bg-purple-600 transition-all"
-                  onClick={() => console.log("User prompt:", inputText)}
+                  onClick={() => handleGeneratePlan(inputText)}
                 >
                   <Send className="w-6 h-6" />
                   Generate Plan
