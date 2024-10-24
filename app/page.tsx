@@ -15,20 +15,217 @@ import {
   Send,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { DatePicker } from "antd";
+import moment from "moment";
 
-// LocationInput Component for Reusability
-const LocationInput = ({ label, city, airport, isFrom = true }) => (
-  <div className="border border-gray-300 hover:border-purple-500 rounded-lg p-4 transition-all duration-200 cursor-pointer bg-white shadow-md hover:shadow-lg">
-    <label className="text-xs font-medium text-gray-600 tracking-wide">
-      {label}
-    </label>
-    <div className="text-lg font-semibold text-gray-900 mt-1">{city}</div>
-    <div className="text-sm text-gray-600 flex items-center gap-1">
-      <span className="font-medium">{airport.split(",")[0]}</span>
-      <span className="text-gray-400">{airport.split(",")[1]}</span>
+const BookingCard = () => {
+  // Dummy data for initial form state
+  const places = [
+    { location: "Dhaka", latitude: 23.8103, longitude: 90.4125 },
+    { location: "Teknaf", latitude: 20.8637, longitude: 92.3018 },
+    { location: "Tetulia", latitude: 26.3086, longitude: 88.9353 },
+    { location: "Saint Martin", latitude: 20.6273, longitude: 92.3226 },
+    { location: "Sylhet", latitude: 24.8949, longitude: 91.8687 },
+    { location: "Bandarban", latitude: 22.1953, longitude: 92.218 },
+    { location: "Cox's Bazar", latitude: 21.4272, longitude: 92.0058 },
+    { location: "Rangamati", latitude: 22.7324, longitude: 92.2988 },
+    { location: "Khagrachari", latitude: 23.1193, longitude: 91.9847 },
+    { location: "Sajek", latitude: 23.3817, longitude: 92.2931 },
+    { location: "Kuakata", latitude: 21.8167, longitude: 90.1167 },
+  ];
+
+  const dummyData = {
+    tripType: "oneWay",
+    origin: "Dhaka",
+    destination: "Saint Martin",
+    journeyDate: "29 Oct 24",
+    days: 2,
+    max_budget: 1000,
+    people: 1,
+    preferences: "bus",
+    travelClass: "Economy",
+  };
+
+  // Form state variables
+  const [tripType, setTripType] = useState(dummyData.tripType);
+  const [origin, setOrigin] = useState(dummyData.origin);
+  const [destination, setDestination] = useState(dummyData.destination);
+  const [journeyDate, setJourneyDate] = useState(dummyData.journeyDate);
+  const [day, setDay] = useState(dummyData.days);
+  const [passengers, setPassengers] = useState(dummyData.people);
+  const [travelClass, setTravelClass] = useState(dummyData.travelClass);
+  const [selectedDate, setSelectedDate] = useState(
+    moment(dummyData.journeyDate),
+  );
+
+  // Handle form submission
+  const handleSearch = () => {
+    const formData = {
+      tripType,
+      origin,
+      destination,
+      journeyDate,
+      day,
+      passengers,
+      travelClass,
+    };
+    console.log("Selected Form Data:", formData);
+  };
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+  };
+
+  return (
+    <div className="py-4 px-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Booking Card */}
+        <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 max-w-5xl mx-auto transition-transform duration-500 ease-in-out transform scale-100">
+          {/* Trip Type Selection */}
+          <div className="flex gap-6 mb-8 justify-center">
+            {["oneWay", "roundWay", "multiCity"].map((type) => (
+              <label
+                key={type}
+                className="flex items-center gap-2 cursor-pointer group"
+              >
+                <div className="relative w-6 h-6">
+                  <input
+                    type="radio"
+                    name="tripType"
+                    checked={tripType === type}
+                    onChange={() => setTripType(type)}
+                    className="peer absolute opacity-0 w-full h-full cursor-pointer"
+                  />
+                  <div className="w-6 h-6 rounded-full border-2 border-gray-300 peer-checked:border-purple-600 transition-colors" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-purple-600 scale-0 peer-checked:scale-100 transition-transform" />
+                </div>
+                <span className="text-gray-700 font-medium">
+                  {type === "oneWay"
+                    ? "One Way"
+                    : type === "roundWay"
+                    ? "Round Trip"
+                    : "Multi City"}
+                </span>
+              </label>
+            ))}
+          </div>
+
+          {/* Search Form */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="md:col-span-2 grid grid-cols-2 gap-6 relative">
+              <div className="border border-gray-300 hover:border-purple-500 rounded-lg p-6 transition-all bg-white shadow-md hover:shadow-lg">
+                <label className="text-xs font-medium text-gray-600 tracking-wide">
+                  FROM
+                </label>
+                <select
+                title="origin"
+                  value={origin}
+                  onChange={(e) => setOrigin(e.target.value)}
+                  className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-lg font-semibold text-gray-900"
+                >
+                  {places.map((loc, idx) => (
+                    <option key={idx} value={loc.location}>
+                      {loc.location}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-2xl transition-all z-10 group">
+                <ArrowLeftRight className="w-5 h-5 text-purple-600 group-hover:rotate-180 transition-transform duration-300" />
+              </button>
+              <div className="border border-gray-300 hover:border-purple-500 rounded-lg p-6 transition-all bg-white shadow-md hover:shadow-lg">
+                <label className="text-xs font-medium text-gray-600 tracking-wide">
+                  TO
+                </label>
+                <select
+                title="destination"
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-lg font-semibold text-gray-900"
+                >
+                  {places.map((loc, idx) => (
+                    <option key={idx} value={loc.location}>
+                      {loc.location}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="border border-gray-300 hover:border-purple-500 rounded-lg p-6 transition-all duration-200 cursor-pointer bg-white shadow-md hover:shadow-lg">
+              <label className="text-xs font-medium text-gray-600 tracking-wide">
+                JOURNEY DATE
+              </label>
+              <DatePicker
+                id="journeyDate"
+                style={{ width: "100%" }}
+                value={selectedDate}
+                onChange={handleDateChange}
+                className="text-lg font-semibold text-gray-700 mt-1"
+              />
+              <label className="text-xs font-medium text-gray-600 tracking-wide mt-4 block">
+                Duration (Days)
+              </label>
+              <div className="flex justify-between gap-1 items-center">
+                <input
+                  type="number"
+                  min={1}
+                  value={day}
+                  onChange={(e) => setDay(e.target.value)}
+                  className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm text-gray-700"
+                  title="days"
+                />
+                <div className="text-sm text-gray-700 mt-1">Days</div>
+              </div>
+            </div>
+
+            <div className="border border-gray-300 hover:border-purple-500 rounded-lg p-6 transition-all duration-200 cursor-pointer bg-white shadow-md hover:shadow-lg">
+              <label className="text-xs font-medium text-gray-600 tracking-wide">
+                PASSENGERS
+              </label>
+              <div className="flex justify-between gap-3 items-center">
+                <input
+                  type="number"
+                  min="1"
+                  value={passengers}
+                  onChange={(e) => setPassengers(e.target.value)}
+                  className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm font-semibold text-gray-900"
+                  title="passengers"
+                />
+                <div className="text-lg font-semibold text-gray-900 mt-1">
+                  Person
+                </div>
+              </div>
+              <label className="text-xs font-medium text-gray-600 tracking-wide">
+                CLASS
+              </label>
+              <select
+              title="travelClass"
+                value={travelClass}
+                onChange={(e) => setTravelClass(e.target.value)}
+                className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm text-gray-700"
+              >
+                <option value="economy">Economy</option>
+                <option value="business">Business</option>
+                <option value="luxury">Luxury</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Search Button */}
+          <div className="mt-10 flex justify-center">
+            <button
+              onClick={handleSearch} // Call handleSearch on button click
+              className="bg-purple-600 text-white px-12 py-4 rounded-lg font-semibold shadow-lg hover:bg-purple-700 transition-all"
+            >
+              Make Trip
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const Header = () => {
   const router = useRouter();
@@ -148,11 +345,11 @@ export default function Homepage() {
                   className="flex-grow text-xl font-semibold bg-transparent text-gray-700 outline-none px-4"
                 />
                 <button
-                  className="flex font-semibold items-center gap-1 bg-purple-500 text-white px-5 py-3 rounded-full shadow-md hover:bg-purple-600 transition-all"
+                  className="flex font-bold items-center gap-1 bg-purple-500 text-white px-5 py-3 rounded-full shadow-md hover:bg-purple-600 transition-all"
                   onClick={() => console.log("User prompt:", inputText)}
                 >
                   <Send className="w-6 h-6" />
-                  Ask Anything
+                  Generate Plan
                 </button>
               </div>
             )}
@@ -215,90 +412,7 @@ export default function Homepage() {
               : "opacity-0 pointer-events-none"
           }`}
         >
-          {showForm && (
-            <div className="py-4 px-6">
-              <div className="max-w-7xl mx-auto">
-                {/* Booking Card */}
-                <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 max-w-5xl mx-auto transition-transform duration-500 ease-in-out transform scale-100">
-                  {/* Trip Type Selection */}
-                  <div className="flex gap-6 mb-8 justify-center">
-                    {["oneWay", "roundWay", "multiCity"].map((type) => (
-                      <label
-                        key={type}
-                        className="flex items-center gap-2 cursor-pointer group"
-                      >
-                        <div className="relative w-6 h-6">
-                          <input
-                            type="radio"
-                            name="tripType"
-                            checked={tripType === type}
-                            onChange={() => setTripType(type)}
-                            className="peer absolute opacity-0 w-full h-full cursor-pointer"
-                          />
-                          <div className="w-6 h-6 rounded-full border-2 border-gray-300 peer-checked:border-purple-600 transition-colors" />
-                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-purple-600 scale-0 peer-checked:scale-100 transition-transform" />
-                        </div>
-                        <span className="text-gray-700 font-medium">
-                          {type === "oneWay"
-                            ? "One Way"
-                            : type === "roundWay"
-                            ? "Round Trip"
-                            : "Multi City"}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-
-                  {/* Search Form */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <div className="md:col-span-2 grid grid-cols-2 gap-6 relative">
-                      <LocationInput
-                        label="FROM"
-                        city="Dhaka"
-                        airport="DAC, Hazrat Shahjalal International Airport"
-                      />
-                      <button className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:shadow-2xl transition-all z-10 group">
-                        <ArrowLeftRight className="w-5 h-5 text-purple-600 group-hover:rotate-180 transition-transform duration-300" />
-                      </button>
-                      <LocationInput
-                        label="TO"
-                        city="Cox's Bazar"
-                        airport="CXB, Cox's Bazar Airport"
-                        isFrom={false}
-                      />
-                    </div>
-
-                    <div className="border border-gray-300 hover:border-purple-500 rounded-lg p-6 transition-all duration-200 cursor-pointer bg-white shadow-md hover:shadow-lg">
-                      <label className="text-xs font-medium text-gray-600 tracking-wide">
-                        JOURNEY DATE
-                      </label>
-                      <div className="text-lg font-semibold text-gray-900 mt-1">
-                        29 Oct'24
-                      </div>
-                      <div className="text-sm text-gray-500">Tuesday</div>
-                    </div>
-
-                    <div className="border border-gray-300 hover:border-purple-500 rounded-lg p-6 transition-all duration-200 cursor-pointer bg-white shadow-md hover:shadow-lg">
-                      <label className="text-xs font-medium text-gray-600 tracking-wide">
-                        PASSENGERS & CLASS
-                      </label>
-                      <div className="text-lg font-semibold text-gray-900 mt-1">
-                        1 Adult
-                      </div>
-                      <div className="text-sm text-gray-500">Economy</div>
-                    </div>
-                  </div>
-
-                  {/* Search Button */}
-                  <div className="mt-10 flex justify-center">
-                    <button className="bg-purple-600 text-white px-12 py-4 rounded-lg font-semibold shadow-lg hover:bg-purple-700 transition-all">
-                      Search Flights
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          {showForm && <BookingCard />}
         </div>
       </div>
     </div>
