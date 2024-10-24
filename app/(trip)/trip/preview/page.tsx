@@ -12,7 +12,7 @@ import {
   Edit2,
   CheckCircle,
   Plus,
-  Trash2
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,7 +45,7 @@ const AVAILABLE_PLACES = [
   "Khulna",
   "Sundarbans",
   "Rajshahi",
-  "Mymensingh"
+  "Mymensingh",
 ];
 
 // Utility function for formatting currency
@@ -120,7 +120,7 @@ const TripDetails = () => {
       meal_type: "",
       name: "",
       type: "",
-      cost: 0
+      cost: 0,
     };
     setFoodPlans([...foodPlans, newFoodPlan]);
   };
@@ -137,7 +137,7 @@ const TripDetails = () => {
       day: accommodations.length + 1,
       type: "",
       location: "",
-      cost_per_night: 0
+      cost_per_night: 0,
     };
     setAccommodations([...accommodations, newAccommodation]);
   };
@@ -183,60 +183,67 @@ const TripDetails = () => {
   );
 
   // Update the useEffect hook where we initialize the date:
-useEffect(() => {
-  const storedData = localStorage.getItem("tripData");
-  if (storedData) {
-    const parsedData = JSON.parse(storedData);
-    setResponseData(parsedData);
-    if (parsedData?.output) {
-      setTripData(parsedData);
-      // Safely parse the date
-      if (parsedData.output.journeyDate) {
-        try {
-          const date = new Date(parsedData.output.journeyDate);
-          // Check if the date is valid
-          if (!isNaN(date.getTime())) {
-            setSelectedDate(date);
-          }
-        } catch (error) {
-          console.error("Error parsing date:", error);
-        }
-      }
-      setFoodPlans(parsedData.output.food || []);
-      setAccommodations(parsedData.output.accommodation || []);
-    }
-  }
-}, []);
-
-// Update the DateSelector component to handle dates more safely:
-const DateSelector = () => (
-  <div className="space-y-2">
-    <Label>Journey Date</Label>
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="outline" className="w-full justify-start text-left font-normal">
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {selectedDate && !isNaN(selectedDate.getTime()) 
-            ? format(selectedDate, "PPP") 
-            : "Select date"}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0">
-        <CalendarComponent
-          mode="single"
-          selected={selectedDate}
-          onSelect={(date) => {
-            setSelectedDate(date);
-            if (date) {
-              handleInputChange("journeyDate", null, format(date, "yyyy-MM-dd"));
+  useEffect(() => {
+    const storedData = localStorage.getItem("tripData");
+    if (storedData) {
+      const parsedData = JSON.parse(storedData);
+      setResponseData(parsedData);
+      if (parsedData?.output) {
+        setTripData(parsedData);
+        // Safely parse the date
+        if (parsedData.output.journeyDate) {
+          try {
+            const date = new Date(parsedData.output.journeyDate);
+            // Check if the date is valid
+            if (!isNaN(date.getTime())) {
+              setSelectedDate(date);
             }
-          }}
-          initialFocus
-        />
-      </PopoverContent>
-    </Popover>
-  </div>
-);
+          } catch (error) {
+            console.error("Error parsing date:", error);
+          }
+        }
+        setFoodPlans(parsedData.output.food || []);
+        setAccommodations(parsedData.output.accommodation || []);
+      }
+    }
+  }, []);
+
+  // Update the DateSelector component to handle dates more safely:
+  const DateSelector = () => (
+    <div className="space-y-2">
+      <Label>Journey Date</Label>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className="w-full justify-start text-left font-normal"
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {selectedDate && !isNaN(selectedDate.getTime())
+              ? format(selectedDate, "PPP")
+              : "Select date"}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0">
+          <CalendarComponent
+            mode="single"
+            selected={selectedDate}
+            onSelect={(date) => {
+              setSelectedDate(date);
+              if (date) {
+                handleInputChange(
+                  "journeyDate",
+                  null,
+                  format(date, "yyyy-MM-dd"),
+                );
+              }
+            }}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
 
   // Food Plan Form Component
   const FoodPlanForm = () => (
@@ -344,7 +351,9 @@ const DateSelector = () => (
               value={accommodation.cost_per_night}
               onChange={(e) => {
                 const updatedAccommodations = [...accommodations];
-                updatedAccommodations[index].cost_per_night = parseInt(e.target.value);
+                updatedAccommodations[index].cost_per_night = parseInt(
+                  e.target.value,
+                );
                 setAccommodations(updatedAccommodations);
               }}
             />
@@ -381,12 +390,16 @@ const DateSelector = () => (
                   <LocationSelector
                     label="Origin"
                     value={output.origin}
-                    onChange={(value) => handleInputChange("origin", null, value)}
+                    onChange={(value) =>
+                      handleInputChange("origin", null, value)
+                    }
                   />
                   <LocationSelector
                     label="Destination"
                     value={output.destination}
-                    onChange={(value) => handleInputChange("destination", null, value)}
+                    onChange={(value) =>
+                      handleInputChange("destination", null, value)
+                    }
                   />
                   <DateSelector />
                 </>
@@ -423,7 +436,9 @@ const DateSelector = () => (
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {(!output?.budget?.breakdown || Object.keys(output?.budget?.breakdown).length === 0) && isEditing ? (
+            {(!output?.budget?.breakdown ||
+              Object.keys(output?.budget?.breakdown).length === 0) &&
+            isEditing ? (
               <div className="space-y-4">
                 <Label>Maximum Budget</Label>
                 <Input
@@ -451,7 +466,11 @@ const DateSelector = () => (
                               ...output.budget.breakdown,
                               [key]: parseInt(e.target.value),
                             };
-                            handleInputChange("budget", "breakdown", newBreakdown);
+                            handleInputChange(
+                              "budget",
+                              "breakdown",
+                              newBreakdown,
+                            );
                           }}
                           className="mt-2"
                         />
@@ -461,7 +480,7 @@ const DateSelector = () => (
                         </div>
                       )}
                     </div>
-                  )
+                  ),
                 )}
               </div>
             )}
@@ -483,16 +502,18 @@ const DateSelector = () => (
               <FoodPlanForm />
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {foodPlans.map((plan, index) => (
-                  <div key={index} className="bg-gray-50 p-3 rounded-lg">
-                    <div className="font-medium capitalize">{plan.meal_type}</div>
-                    <div>{plan.name}</div>
-                    <div className="text-sm text-gray-600">{plan.type}</div>
-                    <div className="font-bold text-orange-600">
-                      {formatCurrency(plan.cost)}
+                {Array.isArray(foodPlans) ? (
+                  foodPlans.map((plan, index) => (
+                    <div key={index} className="bg-gray-50 p-3 rounded-lg">
+                      <div className="font-medium capitalize">
+                        {plan.meal_type}
+                      </div>
+                      {/* Add more content based on your plan object */}
                     </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <div>No food plans available</div>
+                )}
               </div>
             )}
           </CardContent>
@@ -513,7 +534,8 @@ const DateSelector = () => (
               <AccommodationForm />
             ) : (
               <div className="space-y-4">
-                {accommodations.map((accommodation, index) => (
+                {Array.isArray(foodPlans) ? (
+                  accommodations.map((accommodation, index) => (
                   <div key={index} className="bg-gray-50 p-3 rounded-lg">
                     <div className="font-medium">Day {accommodation.day}</div>
                     <div className="flex justify-between items-center mt-2">
@@ -528,7 +550,9 @@ const DateSelector = () => (
                       </div>
                     </div>
                   </div>
-                ))}
+                ))) : (
+                  <div>No accommodations available</div>
+                )}
               </div>
             )}
           </CardContent>
@@ -599,7 +623,8 @@ const DateSelector = () => (
             <Alert className="bg-green-50 border-green-200">
               <CheckCircle className="w-6 h-6 text-green-500" />
               <AlertDescription>
-                Your trip has been confirmed! Redirecting to confirmation page...
+                Your trip has been confirmed! Redirecting to confirmation
+                page...
               </AlertDescription>
             </Alert>
           </div>

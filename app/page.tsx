@@ -53,7 +53,6 @@ const BookingCard = () => {
     const tripPlanQuery = `origin=${origin}&destination=${destination}&days=${days}&budget=${budget}&people=${people}&preferences=${preferences}&tripType=${tripType}&journeyDate=${journeyDate}&travelClass=${travelClass}`;
     console.log("Trip Plan Query:", tripPlanQuery);
 
-    // API Call
     try {
       const response = await axios.get(
         `http://localhost:3000/api/tripPlan?${tripPlanQuery}`,
@@ -63,22 +62,23 @@ const BookingCard = () => {
           },
         }
       );
-
+    
       if (!response.ok) {
         throw new Error("API request failed");
       }
-
+    
       const data = await response.json();
       console.log("API Response:", data);
-
+    
       // Store response data in local storage
       localStorage.setItem('tripData', JSON.stringify(data));
-
+    
       // Navigate to preview page if successful
       router.push("/trip/preview");
     } catch (error) {
       console.error("Error during API call:", error);
     }
+    
   };
 
   const handleDateChange = (date) => {
