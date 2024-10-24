@@ -100,7 +100,7 @@ CREATE TABLE "Vlog" (
 );
 
 -- CreateTable
-CREATE TABLE "Photo" (
+CREATE TABLE "PhotoData" (
     "id" TEXT NOT NULL,
     "url" TEXT NOT NULL,
     "tripPlanId" TEXT NOT NULL,
@@ -108,12 +108,13 @@ CREATE TABLE "Photo" (
     "caption" TEXT,
     "status" "STAUS" NOT NULL DEFAULT 'PRIVATE',
     "location" TEXT,
+    "features" TEXT,
     "timeInString" TEXT,
     "device" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Photo_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "PhotoData_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -174,10 +175,10 @@ ALTER TABLE "Vlog" ADD CONSTRAINT "Vlog_authorId_fkey" FOREIGN KEY ("authorId") 
 ALTER TABLE "Vlog" ADD CONSTRAINT "Vlog_tripPlanId_fkey" FOREIGN KEY ("tripPlanId") REFERENCES "TripPlan"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Photo" ADD CONSTRAINT "Photo_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "PhotoData" ADD CONSTRAINT "PhotoData_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Photo" ADD CONSTRAINT "Photo_tripPlanId_fkey" FOREIGN KEY ("tripPlanId") REFERENCES "TripPlan"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "PhotoData" ADD CONSTRAINT "PhotoData_tripPlanId_fkey" FOREIGN KEY ("tripPlanId") REFERENCES "TripPlan"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_TripPlanMembers" ADD CONSTRAINT "_TripPlanMembers_A_fkey" FOREIGN KEY ("A") REFERENCES "TripPlan"("id") ON DELETE CASCADE ON UPDATE CASCADE;

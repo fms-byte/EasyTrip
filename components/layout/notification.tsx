@@ -12,7 +12,7 @@ import {
 import { Icons } from "../icons";
 import { trpc } from "@/utils/trpc";
 import { Loader2 } from "lucide-react";
-import { notification } from "@prisma/client";
+import { Notification } from "@prisma/client";
 
 interface Notification {
   id: string;
@@ -124,7 +124,7 @@ export function Notifications() {
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
           ) : data?.notifications.length > 0 ? (
-            data?.notifications.map((notification: notification) => (
+            data?.notifications.map((notification: any) => (
               <DropdownMenuItem
                 key={notification.id}
                 className={`flex items-start p-4 space-x-3 border-b last:border-b-0 ${
@@ -141,9 +141,7 @@ export function Notifications() {
                     }`}
                    
                   > 
-                   {
-                    notification.satellite
-                   } Alert is incoming via {notification.notifyIn} before {notification.notifyBefore} hours of you place {notification.locations[0].name}
+                    {notification.content}
                    </p>
                   <p className="text-xs text-gray-500 mt-1">
                     {new Date(notification.createdAt).toLocaleString()}
