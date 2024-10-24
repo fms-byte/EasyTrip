@@ -17,7 +17,7 @@ export default function AuthenticationPage() {
           "absolute right-4 hidden top-4 md:right-8 md:top-8",
         )}
       >
-        Login
+        Login/Sign Up
       </Link>
       <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
         <div className="absolute inset-0 bg-zinc-900" />
@@ -42,7 +42,7 @@ export default function AuthenticationPage() {
         <div className="relative z-20 mt-auto">
           <blockquote className="space-y-2">
             <p className="text-lg">
-              Explore the world's forests, water, and land from space.
+              Enjoy the journey, love the destination.
             </p>
             <footer className="text-sm">Quantum Guys</footer>
           </blockquote>
@@ -55,11 +55,21 @@ export default function AuthenticationPage() {
               Log in
             </h1>
             <p className="text-sm text-muted-foreground">
-              Enter your email below to login
+              Log in with your Google Account
             </p>
           </div>
           <UserAuthForm />
-          
+
+          {/* Create an Account */}
+
+          <p className="text-center text-sm text-muted-foreground">
+            Don't have an account?{" "}
+            <Link href="/examples/authentication/signup" className="text-accent">
+              Sign up
+            </Link>
+          </p>
+
+          <GoogleSignInButton />
         </div> 
       </div>
     </div>
