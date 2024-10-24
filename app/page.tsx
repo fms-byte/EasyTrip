@@ -11,6 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 import { DatePicker } from "antd";
 import moment from "moment";
+import axios from "axios";
 
 const BookingCard = () => {
   // Dummy data for initial form state
@@ -28,127 +29,39 @@ const BookingCard = () => {
     { location: "Kuakata", latitude: 21.8167, longitude: 90.1167 },
   ];
 
-  const dummyData = {
-    trip_name: "Dhaka to Sylhet 3 days trip with 5 people to enjoy the city",
-    origin: "Dhaka",
-    destination: "Sylhet",
-    days: 3,
-    budget: {
-      total: 5000,
-      breakdown: {
-        transportation: 1500,
-        food: 1500,
-        accommodation: 1600,
-        miscellaneous: 400,
-      },
-    },
-    people: 5,
-    preferences: "city",
-    tripType: "oneWay",
-    journeyDate: "10/26/2024",
-    travelClass: "economy",
-    checkpoints: [
-      {
-        origin: {
-          location: "Dhaka",
-          latitude: 23.8103,
-          longitude: 90.4125,
-        },
-        destination: {
-          location: "Sylhet",
-          latitude: 24.8949,
-          longitude: 91.8687,
-        },
-        logistics: {
-          departure_time: "06:00 AM",
-          arrival_time: "12:00 PM",
-          tips: "Take an early morning bus from Dhaka to Sylhet to enjoy the scenic beauty along the way.",
-        },
-      },
-    ],
-    food: {
-      1: {
-        breakfast: {
-          name: "BFC",
-          type: "Fast Food",
-          cost: 400,
-        },
-        launch: {
-          name: "Local Restaurants",
-          type: "Bengali Cuisine",
-          cost: 250,
-        },
-        dinner: {
-          name: "Continental Hotel",
-          type: "Chinese Dish",
-          cost: 550,
-        },
-      },
-    },
-    accommodation: {
-      1: {
-        location: "Sylhet",
-        type: "Budget hotel",
-        cost_per_night: 800,
-      },
-      2: {
-        location: "Sylhet",
-        type: "Budget hotel",
-        cost_per_night: 800,
-      },
-    },
-  };
+  // todays date
+  const today = new Date();
 
   // Form state variables
-  const [tripType, setTripType] = useState(dummyData.tripType);
-  const [origin, setOrigin] = useState(dummyData.origin);
-  const [destination, setDestination] = useState(dummyData.destination);
-  const [journeyDate, setJourneyDate] = useState(dummyData.journeyDate);
-  const [day, setDay] = useState(dummyData.days);
-  const [passengers, setPassengers] = useState(dummyData.people);
-  const [travelClass, setTravelClass] = useState(dummyData.travelClass);
+  const [tripType, setTripType] = useState("oneWay");
+  const [origin, setOrigin] = useState("Dhaka");
+  const [destination, setDestination] = useState("Cox's Bazar");
+  const [journeyDate, setJourneyDate] = useState(today.toISOString());
+  const [days, setDays] = useState("3");
+  const [people, setPeople] = useState("5");
+  const [travelClass, setTravelClass] = useState("economy");
   const [selectedDate, setSelectedDate] = useState(
-    moment(dummyData.journeyDate),
+    moment(today).format("YYYY-MM-DD"),
   );
-  const [budget, setBudget] = useState(dummyData.budget.total);
-  const [preference, setPreference] = useState(dummyData.preferences);
+  const [budget, setBudget] = useState("5000");
+  const [preferences, setPreferences] = useState("want to see river view");
 
   const router = useRouter();
 
   // Handle form submission
   const handleSearch = async () => {
-    const formData = {
-      tripType,
-      origin,
-      destination,
-      journeyDate,
-      days: day.toString(),
-      budget: budget.toString(),
-      people: passengers.toString(),
-      preferences: preference,
-      travelClass,
-    };
-
-    const tripPlan = {
-      input: formData,
-      config: {},
-      kwargs: {},
-    };
-
-    console.log("Selected Form Data:", formData);
-    console.log("Trip Plan:", tripPlan);
+    const tripPlanQuery = `origin=${origin}&destination=${destination}&days=${days}&budget=${budget}&people=${people}&preferences=${preferences}&tripType=${tripType}&journeyDate=${journeyDate}&travelClass=${travelClass}`;
+    console.log("Trip Plan Query:", tripPlanQuery);
 
     // API Call
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_TRIP_PLANNER_API}/trip_plan/invoke`,
+      const response = await axios.get(
+        `http://localhost:3000/api/tripPlan?${tripPlanQuery}`,
         {
-          method: "POST",
           headers: {
-            "Content-Type": "application/json",
+        "Content-Type": "application/json",
           },
-          body: JSON.stringify(tripPlan),
-        },
+        }
       );
 
       if (!response.ok) {
@@ -266,8 +179,8 @@ const BookingCard = () => {
                 <input
                   type="number"
                   min={1}
-                  value={day}
-                  onChange={(e) => setDay(e.target.value)}
+                  value={days}
+                  onChange={(e) => setDays(e.target.value)}
                   className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm text-gray-700"
                   title="days"
                 />
@@ -283,10 +196,10 @@ const BookingCard = () => {
                 <input
                   type="number"
                   min="1"
-                  value={passengers}
-                  onChange={(e) => setPassengers(e.target.value)}
+                  value={people}
+                  onChange={(e) => setPeople(e.target.value)}
                   className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm font-semibold text-gray-900"
-                  title="passengers"
+                  title="people"
                 />
                 <div className="text-lg font-semibold text-gray-900 mt-1">
                   Person
@@ -329,8 +242,8 @@ const BookingCard = () => {
               <input
                 type="text"
                 min="1"
-                value={preference}
-                onChange={(e) => setPreference(e.target.value)}
+                value={preferences}
+                onChange={(e) => setPreferences(e.target.value)}
                 className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-lg font-semibold text-gray-700"
                 title="preference"
               />
