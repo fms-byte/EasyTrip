@@ -33,8 +33,7 @@ export const ObservationLayout: React.FC<OrderCreateProps> = ({
       isOpen={isOpen}
       onClose={onClose}
     >
-       <ObservationFrom initialData={null} />
-
+     
     </Modal>
   );
 };

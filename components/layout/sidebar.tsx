@@ -1,5 +1,5 @@
 "use client";
-import { DashboardNav } from "@/components/dashboard-nav";
+import { TripNav } from "@/components/trip-nav";
 import { navItems } from "@/constants/data";
 import { cn } from "@/lib/utils";  
 import { useState } from "react";
@@ -21,7 +21,7 @@ export default function Sidebar() {
         <div className="flex flex-col h-full space-y-4 py-4">
            
           <div className="space-y-1">
-            <DashboardNav items={navItems} isShow={isShow} />
+            <TripNav items={navItems} isShow={isShow} />
           </div>
         </div>
       </nav>

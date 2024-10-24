@@ -4,7 +4,7 @@
 
 Table Account {
   id String [pk]
-  userId Int [not null]
+  userId String [not null]
   type String [not null]
   provider String [not null]
   providerAccountId String [not null]
@@ -25,187 +25,126 @@ Table Account {
 Table Session {
   id String [pk]
   sessionToken String [unique, not null]
-  userId Int [not null]
+  userId String [not null]
   expires DateTime [not null]
   user User [not null]
 }
 
 Table User {
-  id Int [pk, increment]
+  id String [pk]
   email String [unique, not null]
   passwordHash String
   name String
   image String
   emailVerified DateTime
   socketId String
-  role UserRole [not null, default: 'USER']
-  preferences UserPreferences
-  notifications Notification [not null]
-  locations Location [not null]
-  groundMeasurements GroundMeasurement [not null]
-  validations DataValidation [not null]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   accounts Account [not null]
   sessions Session [not null]
+  blogs Blog [not null]
+  volgs Vlog [not null]
+  photos Photo [not null]
+  tripPlans TripPlan [not null]
+  membersOfTrip TripPlan [not null]
 }
 
-Table UserPreferences {
-  id Int [pk, increment]
-  user User [not null]
-  userId Int [unique, not null]
-  cloudCoverThreshold Float [not null, default: 15]
-  notificationMethods String [not null]
-  notificationLeadTime Int [not null, default: 1]
-  timeSpan Int [not null, default: 30]
+Table TripPlan {
+  id String [pk]
+  title String [not null]
+  author User [not null]
+  authorId String [not null]
+  members User [not null]
+  startDate DateTime [not null]
+  endDate DateTime [not null]
+  data Json [not null]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
-}
-
-Table Location {
-  id Int [pk, increment]
-  name String
-  latitude Float [not null]
-  longitude Float [not null]
-  user User [not null]
-  userId Int [not null]
-  overpasses LandsatOverpass [not null]
-  geojson Json
-  measurements GroundMeasurement [not null]
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
+  location String
+  photos Photo [not null]
+  vlogs Vlog [not null]
   notifications Notification [not null]
-}
-
-Table LandsatOverpass {
-  id Int [pk, increment]
-  location Location [not null]
-  locationId Int [not null]
-  datetime DateTime [not null]
-  satellite String [not null]
-  path Int [not null]
-  row Int [not null]
-  cloudCover Float
-  sceneId String
-  data LandsatData
-  notifications Notification [not null]
-  validations DataValidation [not null]
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-}
-
-Table LandsatData {
-  id Int [pk, increment]
-  overpass LandsatOverpass [not null]
-  overpassId Int [unique, not null]
-  dataUrl String [not null]
-  metadata Json [not null]
-  srValues Json [not null]
-  validations DataValidation [not null]
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-}
-
-Table GroundMeasurement {
-  id Int [pk, increment]
-  user User [not null]
-  userId Int [not null]
-  location Location [not null]
-  locationId Int [not null]
-  datetime DateTime [not null]
-  measurements Json [not null]
-  notes String
-  validations DataValidation [not null]
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-}
-
-Table DataValidation {
-  id Int [pk, increment]
-  landsatData LandsatData [not null]
-  landsatDataId Int [not null]
-  groundMeasurement GroundMeasurement [not null]
-  groundMeasurementId Int [not null]
-  validator User [not null]
-  validatorId Int [not null]
-  validationDate DateTime [default: `now()`, not null]
-  validationResult ValidationResult [not null]
-  comments String
-  createdAt DateTime [default: `now()`, not null]
-  updatedAt DateTime [not null]
-  LandsatOverpass LandsatOverpass
-  landsatOverpassId Int
+  blogs Blog [not null]
 }
 
 Table Notification {
-  id Int [pk, increment]
-  user User [not null]
-  userId Int [not null]
-  overpass LandsatOverpass
-  overpassId Int
-  leadTime Int
-  isSent Boolean [not null, default: false]
-  sentAt DateTime
-  satellite String
+  id String [pk]
+  tripPlan TripPlan [not null]
+  tripPlanId String [not null]
+  content String [not null]
   read Boolean [not null, default: false]
-  notifyBefore Int [not null, default: 1]
-  notifyIn String [not null, default: 'EMAIL,SMS,IN_APP, ALL']
-  smsNumber String
-  email String
-  completed Boolean [not null, default: false]
-  locations Location [not null]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
 }
 
-Table LocationToNotification {
-  notificationsId Int [ref: > Notification.id]
-  locationsId Int [ref: > Location.id]
+Table Blog {
+  id String [pk]
+  title String [not null]
+  content String [not null]
+  author User [not null]
+  authorId String [not null]
+  status STAUS [not null, default: 'PRIVATE']
+  tripPlan TripPlan [not null]
+  tripPlanId String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
 }
 
-Enum UserRole {
-  USER
-  EXPERT
-  ADMIN
+Table Vlog {
+  id String [pk]
+  title String [not null]
+  content String [not null]
+  author User [not null]
+  authorId String [not null]
+  status STAUS [not null, default: 'PRIVATE']
+  tripPlan TripPlan [not null]
+  tripPlanId String [not null]
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
 }
 
-Enum NotificationMethod {
-  EMAIL
-  SMS
-  IN_APP
+Table Photo {
+  id String [pk]
+  url String [not null]
+  author User [not null]
+  tripPlan TripPlan [not null]
+  tripPlanId String [not null]
+  authorId String [not null]
+  caption String
+  status STAUS [not null, default: 'PRIVATE']
+  location String
+  timeInString String
+  device String
+  createdAt DateTime [default: `now()`, not null]
+  updatedAt DateTime [not null]
 }
 
-Enum ValidationResult {
-  VALID
-  INVALID
-  PARTIALLY_VALID
-  PENDING
+Table TripPlanMembers {
+  membersoftripId String [ref: > TripPlan.id]
+  membersId String [ref: > User.id]
+}
+
+Enum STAUS {
+  PUBLIC
+  PRIVATE
 }
 
 Ref: Account.userId > User.id [delete: Cascade]
 
 Ref: Session.userId > User.id [delete: Cascade]
 
-Ref: UserPreferences.userId - User.id
+Ref: TripPlan.authorId > User.id
 
-Ref: Location.userId > User.id
+Ref: Notification.tripPlanId > TripPlan.id
 
-Ref: LandsatOverpass.locationId > Location.id
+Ref: Blog.authorId > User.id
 
-Ref: LandsatData.overpassId - LandsatOverpass.id
+Ref: Blog.tripPlanId > TripPlan.id
 
-Ref: GroundMeasurement.userId > User.id
+Ref: Vlog.authorId > User.id
 
-Ref: GroundMeasurement.locationId > Location.id
+Ref: Vlog.tripPlanId > TripPlan.id
 
-Ref: DataValidation.landsatDataId > LandsatData.id
+Ref: Photo.authorId > User.id
 
-Ref: DataValidation.groundMeasurementId > GroundMeasurement.id
-
-Ref: DataValidation.validatorId > User.id
-
-Ref: DataValidation.landsatOverpassId > LandsatOverpass.id
-
-Ref: Notification.userId > User.id
-
-Ref: Notification.overpassId > LandsatOverpass.id
+Ref: Photo.tripPlanId > TripPlan.id

@@ -1,5 +1,5 @@
 /* eslint-disable import/no-unresolved */
-import dashboardRouter from '@/server/dashboard-route'; 
+import tripRouter from '@/server/trip-route'; 
 import notificationRouter from '@/server/notification-route';
 import orderRouter from '@/server/order-route'; 
 
@@ -17,7 +17,7 @@ const healthCheckerRouter = t.router({
   }),
 });
 
-export const appRouter = t.mergeRouters(orderRouter, healthCheckerRouter, dashboardRouter, notificationRouter);
+export const appRouter = t.mergeRouters(orderRouter, healthCheckerRouter, tripRouter, notificationRouter);
 
 export const createSSRHelper = () =>
   createServerSideHelpers({
