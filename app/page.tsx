@@ -138,34 +138,37 @@ const BookingCard = () => {
     console.log("Selected Form Data:", formData);
     console.log("Trip Plan:", tripPlan);
 
-    // API Call
     try {
+      // Use URLSearchParams to build the query string from tripPlan.input
+      const queryParams = new URLSearchParams(tripPlan.input);
+    
+      // Construct the API URL with the query parameters
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_TRIP_PLANNER_API}/trip_plan/invoke`,
+        `${process.env.NEXT_PUBLIC_TRIP_PLANNER_API}/tripPlan?${queryParams}`,
         {
-          method: "POST",
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(tripPlan),
-        },
+        }
       );
-
+    
       if (!response.ok) {
         throw new Error("API request failed");
       }
-
+    
       const data = await response.json();
       console.log("API Response:", data);
-
+    
       // Store response data in local storage
       localStorage.setItem('tripData', JSON.stringify(data));
-
+    
       // Navigate to preview page if successful
       router.push("/trip/preview");
     } catch (error) {
       console.error("Error during API call:", error);
     }
+    
   };
 
   const handleDateChange = (date) => {
