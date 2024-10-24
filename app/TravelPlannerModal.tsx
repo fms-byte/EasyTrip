@@ -87,15 +87,15 @@ const TravelPlannerModal = ({
     setLoading(true);
     try {
       const queryParams = new URLSearchParams({
-        origin: formData.origin,
-        destination: formData.destination,
-        days: formData.days,
-        budget: formData.budget,
-        people: formData.people,
-        preferences: formData.preferences,
-        tripType: formData.tripType,
-        journeyDate: formData.journeyDate,
-        travelClass: formData.travelClass,
+        origin: formData?.origin,
+        destination: formData?.destination,
+        days: formData?.days,
+        budget: formData?.budget,
+        people: formData?.people,
+        preferences: formData?.preferences,
+        tripType: formData?.tripType,
+        journeyDate: formData?.journeyDate,
+        travelClass: formData?.travelClass,
       });
 
       const response = await fetch(`/api/tripPlan?${queryParams}`);
@@ -189,7 +189,7 @@ const TravelPlannerModal = ({
               <CardContent className="pt-6">
                 <div className="space-y-6">
                   <RadioGroup
-                    value={formData.tripType}
+                    value={formData?.tripType}
                     onValueChange={(value) =>
                       setFormData({ ...formData, tripType: value })
                     }
@@ -213,7 +213,7 @@ const TravelPlannerModal = ({
                     <div className="space-y-2">
                       <Label>Origin</Label>
                       <Input
-                        value={formData.origin}
+                        value={formData?.origin}
                         onChange={(e) =>
                           setFormData({ ...formData, origin: e.target.value })
                         }
@@ -224,7 +224,7 @@ const TravelPlannerModal = ({
                     <div className="space-y-2">
                       <Label>Destination</Label>
                       <Input
-                        value={formData.destination}
+                        value={formData?.destination}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
@@ -242,7 +242,7 @@ const TravelPlannerModal = ({
                       </Label>
                       {/* <Input
                         type="date"
-                        value={formData.journeyDate}
+                        value={formData?.journeyDate}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
@@ -252,7 +252,7 @@ const TravelPlannerModal = ({
                       /> */}
                       <Input
                         type="date"
-                        value={formData.journeyDate || getTodayDateString()} // Set default value to today's date if empty
+                        value={formData?.journeyDate || getTodayDateString()} // Set default value to today's date if empty
                         onChange={handleJourneyDateChange}
                       />
                     </div>
@@ -265,7 +265,7 @@ const TravelPlannerModal = ({
                       <Input
                         type="number"
                         min="1"
-                        value={formData.days}
+                        value={formData?.days}
                         onChange={(e) =>
                           setFormData({ ...formData, days: e.target.value })
                         }
@@ -281,7 +281,7 @@ const TravelPlannerModal = ({
                       <Input
                         type="number"
                         min="1"
-                        value={formData.people}
+                        value={formData?.people}
                         onChange={(e) =>
                           setFormData({ ...formData, people: e.target.value })
                         }
@@ -292,7 +292,7 @@ const TravelPlannerModal = ({
                     <div className="space-y-2">
                       <Label>Travel Class</Label>
                       <Select
-                        value={formData.travelClass}
+                        value={formData?.travelClass}
                         onValueChange={(value) =>
                           setFormData({ ...formData, travelClass: value })
                         }
@@ -316,7 +316,7 @@ const TravelPlannerModal = ({
                     </Label>
                     <Input
                       type="number"
-                      value={formData.budget}
+                      value={formData?.budget}
                       onChange={(e) =>
                         setFormData({ ...formData, budget: e.target.value })
                       }
@@ -327,7 +327,7 @@ const TravelPlannerModal = ({
                   <div className="space-y-2">
                     <Label>Preferences</Label>
                     <Textarea
-                      value={formData.preferences}
+                      value={formData?.preferences}
                       onChange={(e) =>
                         setFormData({
                           ...formData,
