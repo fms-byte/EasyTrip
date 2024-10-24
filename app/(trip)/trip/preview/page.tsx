@@ -592,22 +592,32 @@ const TripPreview = () => {
                                   </div>
                                   <div className="flex flex-wrap gap-4 mt-4">
                                     {accommodationData.phoneNumber && (
-                                      <Button
-                                        variant="outline"
-                                        className="text-indigo-600"
+                                      <a
+                                        href={`tel:${accommodationData.phoneNumber}`}
                                       >
-                                        <Phone className="h-4 w-4 mr-2" />
-                                        {accommodationData.phoneNumber}
-                                      </Button>
+                                        <Button
+                                          variant="outline"
+                                          className="text-indigo-600"
+                                        >
+                                          <Phone className="h-4 w-4 mr-2" />
+                                          {accommodationData.phoneNumber}
+                                        </Button>
+                                      </a>
                                     )}
                                     {accommodationData.website && (
-                                      <Button
-                                        variant="outline"
-                                        className="text-indigo-600"
+                                      <a
+                                        href={accommodationData.website}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
                                       >
-                                        <Globe className="h-4 w-4 mr-2" />
-                                        Visit Website
-                                      </Button>
+                                        <Button
+                                          variant="outline"
+                                          className="text-indigo-600"
+                                        >
+                                          <Globe className="h-4 w-4 mr-2" />
+                                          Visit Website
+                                        </Button>
+                                      </a>
                                     )}
                                   </div>
                                 </div>
