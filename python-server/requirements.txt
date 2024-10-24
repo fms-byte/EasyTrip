@@ -1,3 +1,9 @@
-geemap
-earthengine-api
-Flask
+langchain_core
+langchain-google-genai
+python-dotenv
+streamlit
+langchain-openai
+langserve
+fastapi
+uvicorn
+sse_starlette

@@ -4,11 +4,17 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-geemap = "*"
-earthengine-api = "*"
-flask = "*"
+langchain-core = "*"
+langchain-google-genai = "*"
+python-dotenv = "*"
+streamlit = "*"
+langserve = "*"
+langchain-openai = "*"
+fastapi = "*"
+uvicorn = "*"
+sse-starlette = "*"
 
 [dev-packages]
 
 [requires]
-python_version = ">=3.5"
+python_version = "3.11"
