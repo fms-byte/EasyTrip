@@ -15,11 +15,9 @@ import {
   FileText,
   HelpCircle,
   Image,
-  Laptop,
-  LayoutDashboardIcon,
+  Laptop, 
   ListOrdered,
-  Loader2,
-  LocateIcon,
+  Loader2, 
   LogIn,
   LucideIcon,
   LucideProps,
@@ -41,14 +39,19 @@ import {
   Scan,
   X,
   Map,
-  Pentagon, 
+  Pentagon,
+  Waypoints,
+  Rss,
+  Clapperboard,
+  ImageDown,
+  Settings2, 
 } from "lucide-react"; 
 import { ActivityLogIcon, ValueIcon } from "@radix-ui/react-icons";
+// import { photoStore } from "@/prisma/prisma-client";
 
 export type Icon = LucideIcon;
 
-export const Icons = {
-  dashboard: LayoutDashboardIcon,
+export const Icons = { 
   logo: Command,
   stock : TrendingUp,
   login: LogIn,
@@ -62,11 +65,17 @@ export const Icons = {
   trash: Trash,
   employee: UserX2Icon,
   post: FileText,
+  photos : ImageDown,
+  blogs: Rss,
+  vlogs :Clapperboard,
   page: File,
   media: Image,
+  analytics : Bot,
   tracker : Satellite,
   bell : Bell,
-  settings: Settings,
+  Settings: Settings2,
+  trip: Waypoints,
+  settings: Settings, 
   billing: CreditCard,
   ellipsis: MoreVertical,
   add: Plus,

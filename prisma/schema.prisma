@@ -1,21 +1,19 @@
-// schema.prisma
-
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL") 
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client-js" 
 }
 
 generator dbml {
-  provider = "prisma-dbml-generator"
+  provider        = "prisma-dbml-generator" 
 }
 
 model Account {
-  id                String  @id @default(cuid())
-  userId            Int
+  id                String  @id @default(cuid()) // String ID
+  userId            String
   type              String
   provider          String
   providerAccountId String
@@ -33,9 +31,9 @@ model Account {
 }
 
 model Session {
-  id           String   @id @default(cuid())
+  id           String   @id @default(cuid()) // String ID
   sessionToken String   @unique
-  userId       Int
+  userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -43,157 +41,100 @@ model Session {
 }
 
 model User {
-  id                 Int                 @id @default(autoincrement())
-  email              String              @unique
-  passwordHash       String?
-  name               String?
-  image              String?
-  emailVerified      DateTime?
-  socketId           String?
-  role               UserRole            @default(USER)
-  preferences        UserPreferences?
-  notifications      Notification[]
-  locations          Location[]
-  groundMeasurements GroundMeasurement[]
-  validations        DataValidation[]    @relation("Validator")
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  accounts           Account[]
-  sessions           Session[]
+  id            String     @id @default(cuid()) // String ID
+  email         String     @unique
+  passwordHash  String?
+  name          String?
+  image         String?
+  emailVerified DateTime?
+  socketId      String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  blogs         Blog[]
+  volgs         Vlog[]
+  photos        Photo[]
+  tripPlans     TripPlan[]
+  membersOfTrip TripPlan[] @relation("TripPlanMembers")
 
   @@index([email])
 }
 
-model UserPreferences {
-  id                   Int      @id @default(autoincrement())
-  user                 User     @relation(fields: [userId], references: [id])
-  userId               Int      @unique
-  cloudCoverThreshold  Float    @default(15.0)
-  notificationMethods  String // e.g., "EMAIL,SMS,IN_APP"
-  notificationLeadTime Int      @default(1) // Lead time in days
-  timeSpan             Int      @default(30) // Time span in days
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-}
-
-model Location {
-  id            Int                 @id @default(autoincrement())
-  name          String?
-  latitude      Float
-  longitude     Float
-  user          User                @relation(fields: [userId], references: [id])
-  userId        Int
-  overpasses    LandsatOverpass[]
-  geojson       Json?
-  measurements  GroundMeasurement[]
-  createdAt     DateTime            @default(now())
-  updatedAt     DateTime            @updatedAt
+model TripPlan {
+  id            String         @id @default(cuid()) // String ID
+  title         String
+  author        User           @relation(fields: [authorId], references: [id])
+  authorId      String
+  members       User[]         @relation("TripPlanMembers")
+  startDate     DateTime
+  endDate       DateTime
+  data          Json
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  location      String?
+  photos        Photo[]
+  vlogs         Vlog[]
   notifications Notification[]
+  blogs         Blog[]
 
-  @@index([latitude, longitude])
-  @@index([userId])
-}
-
-model LandsatOverpass {
-  id            Int              @id @default(autoincrement())
-  location      Location         @relation(fields: [locationId], references: [id])
-  locationId    Int
-  datetime      DateTime
-  satellite     String // "Landsat 8" or "Landsat 9"
-  path          Int
-  row           Int
-  cloudCover    Float?
-  sceneId       String?
-  data          LandsatData?
-  notifications Notification[]
-  validations   DataValidation[]
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-
-  @@index([datetime])
-}
-
-model LandsatData {
-  id          Int              @id @default(autoincrement())
-  overpass    LandsatOverpass  @relation(fields: [overpassId], references: [id])
-  overpassId  Int              @unique
-  dataUrl     String
-  metadata    Json
-  srValues    Json // Surface Reflectance values
-  validations DataValidation[]
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-}
-
-model GroundMeasurement {
-  id           Int              @id @default(autoincrement())
-  user         User             @relation(fields: [userId], references: [id])
-  userId       Int
-  location     Location         @relation(fields: [locationId], references: [id])
-  locationId   Int
-  datetime     DateTime
-  measurements Json // Ground-based spectral measurements
-  notes        String?
-  validations  DataValidation[]
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
-
-  @@index([datetime])
-}
-
-model DataValidation {
-  id                  Int               @id @default(autoincrement())
-  landsatData         LandsatData       @relation(fields: [landsatDataId], references: [id])
-  landsatDataId       Int
-  groundMeasurement   GroundMeasurement @relation(fields: [groundMeasurementId], references: [id])
-  groundMeasurementId Int
-  validator           User              @relation(name: "Validator", fields: [validatorId], references: [id])
-  validatorId         Int
-  validationDate      DateTime          @default(now())
-  validationResult    ValidationResult
-  comments            String?
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  LandsatOverpass     LandsatOverpass?  @relation(fields: [landsatOverpassId], references: [id])
-  landsatOverpassId   Int?
+  @@index([authorId])
 }
 
 model Notification {
-  id           Int                @id @default(autoincrement())
-  user         User               @relation(fields: [userId], references: [id])
-  userId       Int
-  overpass     LandsatOverpass?   @relation(fields: [overpassId], references: [id])
-  overpassId   Int?
-  leadTime     Int? // Lead time in days
-  isSent       Boolean            @default(false)
-  sentAt       DateTime?
-  satellite    String?
-  read         Boolean            @default(false)
-  notifyBefore Int                @default(1) // Notify before overpass in hours
-  notifyIn     String             @default("EMAIL,SMS,IN_APP, ALL")
-  smsNumber    String?
-  email        String?
-  completed    Boolean            @default(false)
-  locations    Location[]
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
+  id         String   @id @default(cuid()) // String ID
+  tripPlan   TripPlan @relation(fields: [tripPlanId], references: [id])
+  tripPlanId String
+  content    String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
-enum UserRole {
-  USER
-  EXPERT
-  ADMIN
+model Blog {
+  id         String   @id @default(cuid()) // String ID
+  title      String
+  content    String
+  author     User     @relation(fields: [authorId], references: [id])
+  authorId   String
+  status     STAUS    @default(PRIVATE)
+  tripPlan   TripPlan @relation(fields: [tripPlanId], references: [id])
+  tripPlanId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
-enum NotificationMethod {
-  EMAIL
-  SMS
-  IN_APP
+model Vlog {
+  id         String   @id @default(cuid()) // String ID
+  title      String
+  content    String
+  author     User     @relation(fields: [authorId], references: [id])
+  authorId   String
+  status     STAUS    @default(PRIVATE)
+  tripPlan   TripPlan @relation(fields: [tripPlanId], references: [id])
+  tripPlanId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
-enum ValidationResult {
-  VALID
-  INVALID
-  PARTIALLY_VALID
-  PENDING
+model Photo {
+  id           String                @id @default(cuid()) // String ID
+  url          String
+  author       User                  @relation(fields: [authorId], references: [id])
+  tripPlan     TripPlan              @relation(fields: [tripPlanId], references: [id])
+  tripPlanId   String
+  authorId     String
+  caption      String?
+  status       STAUS                 @default(PRIVATE)
+  // vector       Unsupported("vector")
+  location     String?
+  timeInString String?
+  device       String?
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+}
+
+enum STAUS {
+  PUBLIC
+  PRIVATE
 }

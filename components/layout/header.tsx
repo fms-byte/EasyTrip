@@ -17,7 +17,7 @@ export default function Header() {
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
       // Navigate to the desired URL
-      router.push(`/dashboard/stock/${inputValue}`);
+      router.push(`/trip/stock/${inputValue}`);
     }
   };
 
