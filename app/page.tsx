@@ -122,30 +122,62 @@ const BookingCard = () => {
   const [selectedDate, setSelectedDate] = useState(
     moment(dummyData.journeyDate),
   );
+  const [budget, setBudget] = useState(dummyData.budget.total);
+  const [preference, setPreference] = useState(dummyData.preferences);
 
   const router = useRouter();
 
   // Handle form submission
-  const handleSearch = () => {
+  const handleSearch = async () => {
     const formData = {
       tripType,
       origin,
       destination,
       journeyDate,
-      days: day,
-      budget: 1000,
-      people: passengers,
-      preferences: "",
+      days: day.toString(),
+      budget: budget.toString(),
+      people: passengers.toString(),
+      preferences: preference,
       travelClass,
     };
-    console.log("Selected Form Data:", formData);
 
-    // API ENDPOINT: /trip_plan/invoke
     const tripPlan = {
       input: formData,
+      config: {},
+      kwargs: {},
     };
+
+    console.log("Selected Form Data:", formData);
     console.log("Trip Plan:", tripPlan);
-    router.push("/trip/preview");
+
+    // API Call
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_TRIP_PLANNER_API}/trip_plan/invoke`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(tripPlan),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("API request failed");
+      }
+
+      const data = await response.json();
+      console.log("API Response:", data);
+
+      // Store response data in local storage
+      localStorage.setItem('tripData', JSON.stringify(data));
+
+      // Navigate to preview page if successful
+      router.push("/trip/preview");
+    } catch (error) {
+      console.error("Error during API call:", error);
+    }
   };
 
   const handleDateChange = (date) => {
@@ -288,8 +320,37 @@ const BookingCard = () => {
             </div>
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-6">
+            <div>
+              <div className="text-lg font-semibold text-gray-900 mt-1">
+                Budget
+              </div>
+              <input
+                type="number"
+                min="1"
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+                className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-lg font-semibold text-gray-700"
+                title="budget"
+              />
+            </div>
+            <div>
+              <div className="text-lg font-semibold text-gray-900 mt-1">
+                Preference
+              </div>
+              <input
+                type="text"
+                min="1"
+                value={preference}
+                onChange={(e) => setPreference(e.target.value)}
+                className="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 text-lg font-semibold text-gray-700"
+                title="preference"
+              />
+            </div>
+          </div>
+
           {/* Search Button */}
-          <div className="mt-10 flex justify-center">
+          <div className="flex justify-center">
             <button
               onClick={handleSearch} // Call handleSearch on button click
               className="bg-purple-600 text-white px-12 py-4 rounded-lg font-semibold shadow-lg hover:bg-purple-700 transition-all"
