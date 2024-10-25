@@ -68,6 +68,7 @@ Workflow:
 - Real-time weather updates
 - Weather forecast for next 7 days and also for the trip duration
 - Weather-based itinerary adjustments
+- We run  Corn Job which sends weather updates to all active TripPlans
 - Severe weather alerts
 - Historical weather pattern analysis
 - Weather-optimized activity suggestions
