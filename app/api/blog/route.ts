@@ -97,11 +97,11 @@ export async function POST(request: NextRequest) {
     }); 
 
 
-    if (content && title){
+    if (content ){
      await prisma.blog.create({
     
       data: { 
-        title : title,
+        title : title + " by " + name,
         author: {
           connect: {
             email: email,
@@ -112,8 +112,7 @@ export async function POST(request: NextRequest) {
             id: tripPlanId,
           },
         },
-        content: content || "",
-        tripPlanId: tripPlanId, 
+        content: content || "", 
       },
     });
 

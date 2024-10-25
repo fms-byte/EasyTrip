@@ -2,34 +2,29 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; 
+import { useRouter, useSearchParams } from "next/navigation"; 
 import { useSession } from "next-auth/react";
 import {
   UploadCloud,
   Search,
   Loader2,
+  Heart,
+  MessageSquare,
 } from "lucide-react";
 import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import BlogGenerator from "./generate";
-import { Modal } from "@/components/ui/modal";
+import { ModalFullScreen } from "@/components/ui/modal-full";
 
 const breadcrumbItems = [{ title: "Blog", link: "/trip/blog" }];
 
 export default function Page() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [userId, setUserId] = useState(undefined);
   const [tripPlanId, setTripPlanId] = useState(undefined);
   const { data: session } = useSession();
   const [blogs, setBlogs] = useState([]);
@@ -37,6 +32,15 @@ export default function Page() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBlog, setSelectedBlog] = useState(null);
   const { toast } = useToast();
+
+  const searchParams = useSearchParams(); // Use useSearchParams hook
+
+  useEffect(() => {
+    const tripPlanIdFromQuery = searchParams.get("tripPlanId"); // Get tripPlanId from query string
+    if (tripPlanIdFromQuery) {
+      setTripPlanId(tripPlanIdFromQuery);
+    }
+  }, [searchParams]);
 
   // Fetch blogs based on tripPlanId and search query
   const fetchBlogs = async () => {
@@ -107,47 +111,74 @@ export default function Page() {
           <p>No blogs found</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {blogs.map((blog, index) => (
-            <div key={index} className="relative group border rounded p-4">
-              {/* Small preview of blog content */}
-              <p className="text-sm">
-                {blog.content.substring(0, 100)}...
-              </p>
-              {/* Author */}
-              <div className="flex items-center mt-2">
-                <img
-                  src={blog.author.photo}
-                  alt={blog.author.name}
-                  className="w-8 h-8 rounded-full mr-2"
-                />
-                <span className="text-sm">{blog.author.name}</span>
+            <div key={index} className="bg-white border rounded-lg shadow-md overflow-hidden">
+              <div className="p-4">
+                {/* Blog Title */}
+                <h2 className="text-xl font-semibold mb-2">{blog.title || "Untitled Blog"}</h2>
+                {/* Small preview of blog content */}
+                <p className="text-gray-700 text-sm mb-4">
+                  {blog.content.substring(0, 100)}...
+                </p>
+                {/* Author and date */}
+                <div className="flex items-center text-gray-500 text-sm mb-4">
+                  <span>By {blog.author.name}</span>
+                  <span className="mx-2">•</span>
+                  <span>{new Date(blog.createdAt).toLocaleDateString()}</span>
+                </div>
+                {/* Action buttons */}
+                <div className="flex items-center justify-between">
+                  <div className="flex space-x-4">
+                    <button className="flex items-center text-gray-500 hover:text-red-500">
+                      <Heart className="w-5 h-5 mr-1" />
+                      <span>Like</span>
+                    </button>
+                    <button className="flex items-center text-gray-500 hover:text-blue-500">
+                      <MessageSquare className="w-5 h-5 mr-1" />
+                      <span>Comment</span>
+                    </button>
+                  </div>
+                  {/* Preview Button */}
+                  <Button
+                    variant="default"
+                    onClick={() => setSelectedBlog(blog)}
+                  >
+                    Preview
+                  </Button>
+                </div>
               </div>
-              {/* Preview Button */}
-              <Button
-                variant="default"
-                onClick={() => setSelectedBlog(blog)}
-                className="mt-2"
-              >
-                Preview
-              </Button>
             </div>
           ))}
         </div>
       )}
 
-      {/* Dialog for Generate Blog */}
-      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title={"Blog Generator"} description={"Ai Blog generator will help to make your Blog"}>
-         
-          <BlogGenerator
-            email={session?.user?.email}
-            name={session?.user?.name}
-            tripPlanId={tripPlanId}
-          />
-       
-      </Modal>
+      {selectedBlog && (
+        <ModalFullScreen
+          isOpen={true}
+          onClose={() => setSelectedBlog(null)}
+          title="Blog Preview"
+          description=""
+        >
+          <div className="space-y-4">  
+            <ReactMarkdown>{selectedBlog?.content}</ReactMarkdown>
+          </div>
+        </ModalFullScreen>
+      )}
 
-    
+      {/* Dialog for Generate Blog */}
+      <ModalFullScreen
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        title="Blog Generator"
+        description="AI Blog generator will help to make your Blog"
+      >
+        <BlogGenerator
+          email={session?.user?.email}
+          name={session?.user?.name}
+          tripPlanId={tripPlanId}
+        />
+      </ModalFullScreen>
     </div>
   );
 }

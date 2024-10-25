@@ -41,70 +41,68 @@ Table User {
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   accounts Account [not null]
-  sessions Session [not null]
   blogs Blog [not null]
-  volgs Vlog [not null]
   photos PhotoData [not null]
+  sessions Session [not null]
   tripPlans TripPlan [not null]
+  volgs Vlog [not null]
   membersOfTrip TripPlan [not null]
 }
 
 Table TripPlan {
   id String [pk]
-  author User [not null]
   authorId String [not null]
-  members User [not null]
   data Json [not null]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
   location String
-  photos PhotoData [not null]
-  vlogs Vlog [not null]
-  notifications Notification [not null]
   blogs Blog [not null]
+  notifications Notification [not null]
+  photos PhotoData [not null]
+  author User [not null]
+  vlogs Vlog [not null]
+  members User [not null]
 }
 
 Table Notification {
   id String [pk]
-  tripPlan TripPlan [not null]
   tripPlanId String [not null]
   content String [not null]
   read Boolean [not null, default: false]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
+  tripPlan TripPlan [not null]
 }
 
 Table Blog {
   id String [pk]
   title String [not null]
   content String [not null]
-  author User [not null]
   authorId String [not null]
   status STAUS [not null, default: 'PRIVATE']
-  tripPlan TripPlan [not null]
   tripPlanId String [not null]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
+  author User [not null]
+  tripPlan TripPlan [not null]
 }
 
 Table Vlog {
   id String [pk]
   title String [not null]
   content String [not null]
-  author User [not null]
   authorId String [not null]
   status STAUS [not null, default: 'PRIVATE']
-  tripPlan TripPlan [not null]
   tripPlanId String [not null]
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
+  author User [not null]
+  tripPlan TripPlan [not null]
 }
 
 Table PhotoData {
   id String [pk]
   url String [not null]
-  author User [not null]
-  tripPlan TripPlan [not null]
   tripPlanId String [not null]
   authorId String [not null]
   caption String
@@ -115,6 +113,8 @@ Table PhotoData {
   device String
   createdAt DateTime [default: `now()`, not null]
   updatedAt DateTime [not null]
+  author User [not null]
+  tripPlan TripPlan [not null]
 }
 
 Table TripPlanMembers {

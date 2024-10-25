@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import MultipleImageUpload from "./uploads";
 import { useSession } from "next-auth/react";
 import {
@@ -34,6 +34,15 @@ export default function Page() {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedImages, setSelectedImages] = useState([]);
+ 
+  const searchParams = useSearchParams(); // Use useSearchParams hook
+
+  useEffect(() => {
+    const tripPlanIdFromQuery = searchParams.get("tripPlanId"); // Get tripPlanId from query string
+    if (tripPlanIdFromQuery) {
+      setTripPlanId(tripPlanIdFromQuery);
+    }
+  }, [searchParams]);
 
   // Fetch images based on tripPlanId and search query
   const fetchImages = async () => {

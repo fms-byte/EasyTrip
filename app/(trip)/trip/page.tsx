@@ -4,8 +4,6 @@ import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import TripPlan from "@/components/layout/TripPlan";
 import { useSession } from "next-auth/react";
-import { toast } from "@/components/ui/use-toast";
-import { Toast } from "@radix-ui/react-toast";
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -18,18 +16,16 @@ export default function Page() {
   );
   const [tripPlans, setTripPlans] = useState([]);
   const [selectedTripPlan, setSelectedTripPlan] = useState({});
-  const [email, setEmail] = useState("");
+  const [hasSavedTripPlan, setHasSavedTripPlan] = useState(false);
 
   const { data: session } = useSession();
-  const [locationError, setLocationError] = useState(null);
-  const [isFetchingLocation, setIsFetchingLocation] = useState(false);
 
   // Function to update URL with tripPlanId
   const updateURL = useCallback(() => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("tripPlanId", tripPlanId);
-    router.push(`${pathname}?${params.toString()}`);
-  }, [tripPlanId, pathname, searchParams, router]);
+    router.replace(`${pathname}?${params.toString()}`);
+  }, [tripPlanId, pathname]);
 
   useEffect(() => {
     updateURL();
@@ -39,9 +35,10 @@ export default function Page() {
   useEffect(() => {
     const saveTripPlan = async () => {
       const tripPlan = localStorage.getItem("tripPlan");
+      if (!tripPlan || hasSavedTripPlan) return; // Prevent multiple saves
       setLoading(true);
 
-      try { 
+      try {
         const res = await fetch("/api/trip", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -56,9 +53,7 @@ export default function Page() {
           localStorage.removeItem("tripPlan");
           setTripPlanId(data.tripPlans[0].id);
           setSelectedTripPlan(data.tripPlans[0]);
-          const params = new URLSearchParams(searchParams.toString());
-          params.set("tripPlanId", data.tripPlans[0].id);
-          router.push(`${pathname}?${params.toString()}`);
+          setHasSavedTripPlan(true); // Update the state variable
           alert("Trip plan saved successfully");
         }
       } catch (error) {
@@ -68,8 +63,10 @@ export default function Page() {
       }
     };
 
-    saveTripPlan();
-  }, [session?.user?.email, searchParams, pathname]);
+    if (session?.user?.email) {
+      saveTripPlan();
+    }
+  }, [session?.user?.email, hasSavedTripPlan]); // Removed searchParams and pathname
 
   return (
     <div className="relative flex flex-col p-8 bg-gray-50 min-h-screen">
@@ -80,9 +77,9 @@ export default function Page() {
           <div className="flex justify-center items-center">
             <div className="loader"></div>
           </div>
-        ) : tripPlans.length > 0 ? (
+        ) : tripPlans?.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {tripPlans.map((trip) => (
+            {tripPlans?.map((trip) => (
               <div
                 key={trip.id}
                 className="bg-white p-4 rounded-lg shadow-md cursor-pointer hover:bg-blue-50 transition duration-200 transform hover:scale-105"
