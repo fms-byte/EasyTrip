@@ -173,9 +173,9 @@ export async function POST(request: NextRequest) {
       ],
     });
 
-    const content = visionResponse.choices[0].message.content;
+    const contents = visionResponse.choices[0].message.content;
   
-    return NextResponse.json({ success: true, content, title : `Travel Blog: ${tripPlan?.data?.name} by ${name}` }, { status: 200 });
+    return NextResponse.json({ success: true, content : contents, title : `Travel Blog: ${tripPlan?.data?.name} by ${name}` }, { status: 200 });
 
   } catch (error) {
     console.error(`Error in POST /api/image: ${error.message}`);
