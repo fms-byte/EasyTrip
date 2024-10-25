@@ -4,6 +4,7 @@ import Header from "@/components/layout/header";
 import Sidebar from "@/components/layout/sidebar";
 import type { Metadata } from "next";
 import { TrpcProvider } from "@/utils/trpc-provider";
+import { useSession } from "next-auth/react";
 
 // export const metadata: Metadata = {
 //   title: "Easy Trip",
@@ -15,8 +16,9 @@ export default function TripLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const { data: session } = useSession();
   const pathname = usePathname(); // Get the current pathname
-  const isPreviewRoute = pathname?.includes("preview"); // Use optional chaining
+  const isPreviewRoute = pathname?.includes("preview") && !session;
 
   return (
     <>

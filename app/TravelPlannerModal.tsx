@@ -138,6 +138,17 @@ const TravelPlannerModal = ({
               <Navigation className="h-6 w-6" />
               Travel Planner
             </DialogTitle>
+
+            {loading ? (
+              <div>
+                {/* A Loading Component */}
+                <div className="flex items-center space-x-2">
+                  <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
+                  <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
+                  <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
+                </div>
+              </div>
+            ) : null}
             <div className="flex gap-2">
               <Button
                 variant="outline"

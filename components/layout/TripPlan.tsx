@@ -24,7 +24,6 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -55,37 +54,39 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 
-const TripPreview = () => {
-  const [tripPlanId, setTripPlanId] = useState("");
-  const [tripData, setTripData] = useState(null);
+const TripPlan = (tripPlan: any) => {
+  const [tripData, setTripData] = useState(tripPlan.data);
   const [editMode, setEditMode] = useState(false);
-  const [editData, setEditData] = useState({});
+  const [editData, setEditData] = useState(tripPlan.data);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedDay, setSelectedDay] = useState(1);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
   useEffect(() => {
     const savedTrip = localStorage.getItem("tripPlan");
-    if (savedTrip) {
-      const parsedData = JSON.parse(savedTrip);
-      setTripData(parsedData);
-      setEditData(parsedData);
+
+    if (!tripData) {
+      if (savedTrip) {
+        const parsedData = JSON.parse(savedTrip);
+        setTripData(parsedData);
+        setEditData(parsedData);
+      }
     }
   }, []);
 
-  console.log(tripData);
-
   const handleSave = async () => {
     try {
-      const response = await fetch("/api/tripPlan/update", {
-        method: "POST",
+      const response = await fetch("/api/trip", {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(editData),
+        body: JSON.stringify({
+          tripPlan: JSON.stringify(editData),
+          tripPlanId: tripData.id,
+          email: tripPlan?.author?.email, // Ensure email is defined in the scope
+        }),
       });
       const updatedData = await response.json();
       setTripData(updatedData);
@@ -99,20 +100,6 @@ const TripPreview = () => {
   const handleConfirmTrip = () => {
     setShowConfirmation(true);
     // Additional confirmation logic here
-  };
-
-  const { data: session } = useSession();
-
-  const router = useRouter();
-
-  const handleConfirmTripFinal = () => {
-    if (session) {
-      console.log("Trip confirmed!");
-      router.push("/trip");
-    } else {
-      alert("Please sign in to confirm your trip.");
-      router.push("/signin");
-    }
   };
 
   const updateTripDetails = (field, value) => {
@@ -338,14 +325,6 @@ const TripPreview = () => {
                   </ScrollArea>
                 </DialogContent>
               </Dialog>
-
-              <Button
-                onClick={handleConfirmTrip}
-                className="bg-green-600 hover:bg-green-700 text-white font-semibold"
-              >
-                <Check className="h-4 w-4 mr-2" />
-                Confirm Trip
-              </Button>
             </div>
           </div>
 
@@ -735,24 +714,6 @@ const TripPreview = () => {
                     </ul>
                   </AlertDescription>
                 </Alert>
-                <div className="flex justify-end space-x-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowConfirmation(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                    onClick={() => {
-                      console.log("Trip confirmed!");
-                      handleConfirmTripFinal();
-                      setShowConfirmation(false);
-                    }}
-                  >
-                    Confirm Trip
-                  </Button>
-                </div>
               </div>
             </DialogContent>
           </Dialog>
@@ -762,4 +723,4 @@ const TripPreview = () => {
   );
 };
 
-export default TripPreview;
+export default TripPlan;

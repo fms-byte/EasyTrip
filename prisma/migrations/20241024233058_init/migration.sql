@@ -47,10 +47,7 @@ CREATE TABLE "User" (
 -- CreateTable
 CREATE TABLE "TripPlan" (
     "id" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
     "authorId" TEXT NOT NULL,
-    "startDate" TIMESTAMP(3) NOT NULL,
-    "endDate" TIMESTAMP(3) NOT NULL,
     "data" JSONB NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,

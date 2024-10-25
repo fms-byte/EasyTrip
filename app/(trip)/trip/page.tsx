@@ -1,145 +1,117 @@
-/* eslint-disable import/no-unresolved */
-/* eslint-disable react-hooks/rules-of-hooks */
 "use client";
-import { CalendarDateRangePicker } from "@/components/date-range-picker";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { trpc } from "@/utils/trpc";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/components/ui/select";
 
-import { addDays, set } from "date-fns";
 import { useEffect, useState, useCallback } from "react";
-
-import { DateRange } from "react-day-picker";  
-import { Slider } from "@/components/ui/slider";
-import { useSearchParams, usePathname, useRouter } from "next/navigation"; 
+import { useSearchParams, usePathname, useRouter } from "next/navigation";
+import TripPlan from "@/components/layout/TripPlan";
+import { useSession } from "next-auth/react";
+import { toast } from "@/components/ui/use-toast";
+import { Toast } from "@radix-ui/react-toast";
 
 export default function Page() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
 
- 
-  const [tripPlanId, setSelectedOption] = useState(
-    searchParams.get("tripPlanId") || ""
+  const [loading, setLoading] = useState(true);
+  const [tripPlanId, setTripPlanId] = useState(
+    searchParams.get("tripPlanId") || "",
   );
+  const [tripPlans, setTripPlans] = useState([]);
+  const [selectedTripPlan, setSelectedTripPlan] = useState({});
+  const [email, setEmail] = useState("");
 
-  
-  const [lat, setLat] = useState(() => {
-    try {
-      return searchParams.get("lat") || "23.8103";
-    } catch (error) {
-      console.error("Error parsing latitude parameter:", error);
-      return "23.8103";
-    }
-  });
-  
-  const [lon, setLon] = useState(() => {
-    try {
-      return searchParams.get("lon") || "90.4125";
-    } catch (error) {
-      console.error("Error parsing longitude parameter:", error);
-      return "90.4125";
-    }
-  });
-
-  const [cloud, setCloud] = useState(() => {
-    try {
-      return parseInt(searchParams.get("cloud") || "20");
-    } catch (error) {
-      console.error("Error parsing cloud parameter:", error);
-      return 20;
-    }
-  });
-
-  const [loading, setloading] = useState(true);
-  
-  const [locationError, setLocationError] = useState<string | null>(null);
+  const { data: session } = useSession();
+  const [locationError, setLocationError] = useState(null);
   const [isFetchingLocation, setIsFetchingLocation] = useState(false);
 
+  // Function to update URL with tripPlanId
   const updateURL = useCallback(() => {
-    const params = new URLSearchParams(searchParams);
-   
-    params.set("lat", lat);
-    params.set("lon", lon);
+    const params = new URLSearchParams(searchParams.toString());
     params.set("tripPlanId", tripPlanId);
-
     router.push(`${pathname}?${params.toString()}`);
-  }, [lat, lon, tripPlanId, pathname, searchParams]);
+  }, [tripPlanId, pathname, searchParams, router]);
 
   useEffect(() => {
     updateURL();
   }, [updateURL]);
 
-  // New useEffect to fetch user's geolocation
+  // Save or retrieve tripPlan from localStorage
   useEffect(() => {
-    if (!navigator.geolocation) {
-      setLocationError("Geolocation is not supported by your browser.");
-      return;
-    }
+    const saveTripPlan = async () => {
+      const tripPlan = localStorage.getItem("tripPlan");
+      setLoading(true);
 
-    setIsFetchingLocation(true);
+      try { 
+        const res = await fetch("/api/trip", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: session?.user?.email, tripPlan }),
+        });
+        const data = await res.json();
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        setLat(latitude.toString());
-        setLon(longitude.toString());
-        setIsFetchingLocation(false);
-      },
-      (error) => {
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            setLocationError("User denied the request for Geolocation.");
-            break;
-          case error.POSITION_UNAVAILABLE:
-            setLocationError("Location information is unavailable.");
-            break;
-          case error.TIMEOUT:
-            setLocationError("The request to get user location timed out.");
-            break;
-          default:
-            setLocationError("An unknown error occurred.");
-            break;
+        console.log("Trip plan saved:", data);
+
+        setTripPlans(data.tripPlans);
+        if (data.tripPlans.length > 0) {
+          localStorage.removeItem("tripPlan");
+          setTripPlanId(data.tripPlans[0].id);
+          setSelectedTripPlan(data.tripPlans[0]);
+          const params = new URLSearchParams(searchParams.toString());
+          params.set("tripPlanId", data.tripPlans[0].id);
+          router.push(`${pathname}?${params.toString()}`);
+          alert("Trip plan saved successfully");
         }
-        setIsFetchingLocation(false);
+      } catch (error) {
+        console.error("Error saving trip plan:", error);
+      } finally {
+        setLoading(false);
       }
-    );
-  }, []);
+    };
 
-  
-
-  useEffect(() => { 
-    setloading(true);
-  }, [lat, lon, tripPlanId]);
+    saveTripPlan();
+  }, [session?.user?.email, searchParams, pathname]);
 
   return (
-    <div className="relative">
-      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-         
-        {/* Optional: Show location fetching status or errors */}
-        <div className="mb-4">
-          {isFetchingLocation && (
-            <p className="text-gray-500">Fetching your location...</p>
-          )}
-          {locationError && (
-            <p className="text-red-500">Error: {locationError}</p>
-          )}
-        </div>
+    <div className="relative flex flex-col p-8 bg-gray-50 min-h-screen">
+      <div className="flex-1 space-y-4">
+        <h1 className="text-2xl font-bold text-gray-800">My Trip Plans</h1>
 
-        <div className="mt-8">
-            {loading && (
-              <div>
-              <p>Latitude: {lat}</p>
-              <p>Longitude: {lon}</p> 
+        {loading ? (
+          <div className="flex justify-center items-center">
+            <div className="loader"></div>
+          </div>
+        ) : tripPlans.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {tripPlans.map((trip) => (
+              <div
+                key={trip.id}
+                className="bg-white p-4 rounded-lg shadow-md cursor-pointer hover:bg-blue-50 transition duration-200 transform hover:scale-105"
+                onClick={() => {
+                  setTripPlanId(trip.id);
+                  setSelectedTripPlan(trip);
+                  localStorage.setItem("tripPlan", JSON.stringify(trip?.data));
+                  updateURL();
+                }}
+              >
+                {trip?.data?.name}
               </div>
-            )}
-             
-        </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-600">
+            No trips found. Join a{" "}
+            <a href="/public-trip" className="text-blue-600 underline">
+              <u>Public Trip</u>
+            </a>{" "}
+            or{" "}
+            <a href="/" className="text-blue-600 underline">
+              <u>Create a New Trip</u>
+            </a>
+          </p>
+        )}
+
+        {/* Render TripPlan */}
+        {selectedTripPlan && <TripPlan tripPlan={selectedTripPlan} />}
       </div>
     </div>
   );

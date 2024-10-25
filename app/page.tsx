@@ -13,6 +13,7 @@ import { DatePicker } from "antd";
 import moment from "moment";
 import axios from "axios";
 import TravelPlannerModal from "./TravelPlannerModal";
+import { useSession } from "next-auth/react";
 
 const BookingCard = () => {
   // Dummy data for initial form state
@@ -57,27 +58,26 @@ const BookingCard = () => {
         `http://localhost:3000/api/tripPlan?${tripPlanQuery}`,
         {
           headers: {
-        "Content-Type": "application/json",
+            "Content-Type": "application/json",
           },
-        }
+        },
       );
-    
+
       if (response.status !== 200) {
         throw new Error("API request failed");
       }
-        
+
       const data = response.data;
       console.log("API Response:", data);
-    
+
       // Store response data in local storage
-      localStorage.setItem('tripData', JSON.stringify(data.output));
-    
+      localStorage.setItem("tripData", JSON.stringify(data.output));
+
       // Navigate to preview page if successful
       //   router.push("/trip/preview");
     } catch (error) {
       console.error("Error during API call:", error);
     }
-    
   };
 
   const handleDateChange = (date) => {
@@ -267,6 +267,8 @@ const BookingCard = () => {
 const Header = () => {
   const router = useRouter();
 
+  const { data: session } = useSession();
+
   const handleSignInClick = () => {
     router.push("/signin");
   };
@@ -282,13 +284,24 @@ const Header = () => {
             <span className="text-sm font-medium text-gray-800">BDT</span>
             <ChevronDown className="w-4 h-4 text-gray-400" />
           </div>
-          <button
-            onClick={handleSignInClick}
-            className="bg-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-purple-700 transition-all flex items-center gap-2 shadow-lg"
-          >
-            <User className="w-5 h-5" />
-            <span>Sign In</span>
-          </button>
+          {session?.user ? (
+            <button
+              className="bg-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-purple-700 transition-all flex items-center gap-2 shadow-lg"
+              onClick={() => {
+                router.push("/trip");
+              }}
+            >
+              Go to Home
+            </button>
+          ) : (
+            <button
+              onClick={handleSignInClick}
+              className="bg-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-purple-700 transition-all flex items-center gap-2 shadow-lg"
+            >
+              <User className="w-5 h-5" />
+              <span>Sign In</span>
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -381,10 +394,10 @@ export default function Homepage() {
           {/* EasyTrip Intro */}
           <div className="text-center mb-12 space-y-6">
             <div className="text-4xl md:text-5xl font-extrabold text-gray-800 leading-normal">
-              <span className="font-bold">EasyTrip AI</span> <br /> 
-                <div className="text-xl md:text-2xl font-bold text-gray-700">
+              <span className="font-bold">EasyTrip AI</span> <br />
+              <div className="text-xl md:text-2xl font-bold text-gray-700">
                 Your Personal Travel Agent
-                </div>
+              </div>
             </div>
 
             {/* Conditional rendering for Search Input */}
