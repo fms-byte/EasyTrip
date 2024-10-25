@@ -1,3 +1,5 @@
+"use client";
+import { usePathname } from "next/navigation"; // Use usePathname instead
 import Header from "@/components/layout/header";
 import Sidebar from "@/components/layout/sidebar";
 import type { Metadata } from "next";
@@ -13,16 +15,17 @@ export default function TripLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname(); // Get the current pathname
+  const isPreviewRoute = pathname?.includes("preview"); // Use optional chaining
+
   return (
     <>
       <TrpcProvider>
-      <Header />
-      <div className="flex h-screen overflow-hidden">
-        <Sidebar />
-        <main className="w-full pt-16">
-            {children}
-        </main>
-      </div>
+        <Header />
+        <div className="flex h-screen overflow-hidden">
+          {!isPreviewRoute && <Sidebar />}
+          <main className="w-full pt-16">{children}</main>
+        </div>
       </TrpcProvider>
     </>
   );

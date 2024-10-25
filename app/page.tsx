@@ -73,7 +73,7 @@ const BookingCard = () => {
       localStorage.setItem('tripData', JSON.stringify(data.output));
     
       // Navigate to preview page if successful
-      router.push("/trip/preview");
+      //   router.push("/trip/preview");
     } catch (error) {
       console.error("Error during API call:", error);
     }
