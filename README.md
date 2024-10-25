@@ -40,6 +40,7 @@ EasyTrip addresses these challenges through an integrated platform that leverage
 - Natural language input for Trip generation
 - Traditional and AI-powered itinerary generation
 - Detailed day-wise itinerary with activities with proper Validation
+- Google Search API Integration for fetching real-time data
 - Customizable preferences for:
   - Budget range
   - Travel style
@@ -118,6 +119,7 @@ Workflow:
   - Google Maps Platform
   - Weather API (http://api.weatherapi.com/v1/)
   - Cloud Storage (AWS RDS)
+  - Google Search API (https://serper.dev/)
 
 ### 3.2 System Architecture
 - The Next.js frontend acts as the user interface, sending requests to the API Gateway.
