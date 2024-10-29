@@ -34,7 +34,6 @@ EasyTrip addresses these challenges through an integrated platform that leverage
 
 ### Preview Youtube Video
 
-You can watch a preview of EasyTrip on YouTube:
 [![EasyTrip Preview](https://img.youtube.com/vi/OtZJD41Pqx8/0.jpg)](https://www.youtube.com/watch?v=OtZJD41Pqx8)
 
 ---
