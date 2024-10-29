@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 const axios = require('axios');
 
-const url = "http://api.weatherapi.com/v1/forecast.json?key=f872c5f18f79489083b124754242410";
+const url = "http://api.weatherapi.com/v1/forecast.json?key="+process.env.WEATHER_API_KEY;
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);

@@ -36,7 +36,7 @@ app.add_middleware(
 
 @tool
 def get_hotels_tool(place: str) -> str:
-    """Search for hotels in Bangladesh for a specific place"""
+    """Search for hotels in Bangladesh for this specific place"""
     url = "https://google.serper.dev/places"
     
     payload = json.dumps({
@@ -44,7 +44,7 @@ def get_hotels_tool(place: str) -> str:
         "gl": "bd"
     })
     headers = {
-        'X-API-KEY': 'eedc6b3c24e1ecd3d4be0950fb9b85fd567a0096',
+        'X-API-KEY': os.getenv('GOOGLE_SEARCH_API_KEY'),
         'Content-Type': 'application/json'
     }
     
@@ -224,7 +224,7 @@ llm_gpt = ChatOpenAI(
     max_tokens=None,
     timeout=None,
     max_retries=2,
-    api_key="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"
+    api_key= os.getenv("OPENAI_API_KEY")
 )
 output_parser=StrOutputParser()
 json_output_parser=JSONOutputParser()

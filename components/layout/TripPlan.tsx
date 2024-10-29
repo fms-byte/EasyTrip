@@ -19,6 +19,10 @@ import {
   Building2,
   Phone,
   Globe,
+  Bus,
+  Home,
+  Package,
+  Plus,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,26 +58,140 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useSession } from "next-auth/react";
 
-const TripPlan = (tripPlan: any) => {
-  const [tripData, setTripData] = useState(tripPlan.data);
+
+
+const TourMates = ({ members = [], tripPlanId, onMemberAdded }) => {
+
+  console.log("TourMates", members, tripPlanId, onMemberAdded);
+  const [showAddMember, setShowAddMember] = useState(false);
+  const [newMemberEmail, setNewMemberEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleAddMember = async () => {
+    if (!newMemberEmail) return;
+    
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/trip', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tripPlanId,
+          newMemberEmail,
+        }),
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        onMemberAdded?.(result);
+        setNewMemberEmail('');
+        setShowAddMember(false);
+      }
+    } catch (error) {
+      console.error('Error adding member:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+      <CardHeader className="bg-gradient-to-r from-violet-50 to-violet-100">
+        <CardTitle className="text-2xl text-violet-800 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Users className="h-6 w-6" />
+            Tour Mates
+          </div>
+          <Dialog open={showAddMember} onOpenChange={setShowAddMember}>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="bg-violet-100 hover:bg-violet-200 border-violet-200"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Member
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-xl font-semibold">Add New Tour Mate</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-4">
+                <div className="space-y-2">
+                  <Input
+                    type="email"
+                    placeholder="Enter member's email"
+                    value={newMemberEmail}
+                    onChange={(e) => setNewMemberEmail(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAddMember(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleAddMember}
+                    disabled={!newMemberEmail || isSubmitting}
+                    className="bg-violet-600 hover:bg-violet-700 text-white"
+                  >
+                    {isSubmitting ? 'Adding...' : 'Add Member'}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+          {members.map((member, index) => (
+            <div
+              key={index}
+              className="flex w-full items-center gap-3 p-3 bg-violet-50 rounded-lg hover:bg-violet-100 transition-colors duration-200"
+            >
+              <div className="relative">
+                <img
+                  src={member.image? member.image : '/tourist.jpg'}
+                  alt={member.name}
+                  className="w-10 h-10 rounded-full object-cover border-2 border-violet-200"
+                />
+                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-gray-900 truncate">{member.name}</p>
+                <p className="text-sm text-gray-500 truncate">{member.email}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+ 
+
+
+const TripPlan = (selectedTripPlan: any) => {
+  const { data: session } = useSession();
+  const [tripData, setTripData] = useState(selectedTripPlan.tripPlan.data);
   const [editMode, setEditMode] = useState(false);
-  const [editData, setEditData] = useState(tripPlan.data);
+  const [editData, setEditData] = useState(selectedTripPlan.tripPlan.data);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedDay, setSelectedDay] = useState(1);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
-  useEffect(() => {
-    const savedTrip = localStorage.getItem("tripPlan");
-
-    if (!tripData) {
-      if (savedTrip) {
-        const parsedData = JSON.parse(savedTrip);
-        setTripData(parsedData);
-        setEditData(parsedData);
-      }
-    }
-  }, []);
+  if (!selectedTripPlan) {
+    console.log("Error");
+    return <></>;
+  }
 
   const handleSave = async () => {
     try {
@@ -85,7 +203,7 @@ const TripPlan = (tripPlan: any) => {
         body: JSON.stringify({
           tripPlan: JSON.stringify(editData),
           tripPlanId: tripData.id,
-          email: tripPlan?.author?.email, // Ensure email is defined in the scope
+          email: session?.user.email, // Ensure email is defined in the scope
         }),
       });
       const updatedData = await response.json();
@@ -135,12 +253,7 @@ const TripPlan = (tripPlan: any) => {
     }
   };
 
-  if (!tripData)
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
+  if (!tripData) return <div>Loading...</div>;
 
   return (
     <div className="h-screen overflow-auto bg-gray-50">
@@ -337,7 +450,8 @@ const TripPlan = (tripPlan: any) => {
                   Trip Overview
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent> 
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-4">
                   <div className="flex items-center gap-4 bg-blue-50 p-4 rounded-lg">
                     <div className="bg-blue-100 p-2 rounded-full">
@@ -398,30 +512,79 @@ const TripPlan = (tripPlan: any) => {
               </CardContent>
             </Card>
 
+
+            
+            <TourMates
+                  members={selectedTripPlan.tripPlan.members}
+                  tripPlanId={tripData.id}
+                  onMemberAdded={(updatedTripPlan) => {
+                    setTripData(updatedTripPlan);
+                  }}
+
+                />
+
             {/* Budget Breakdown */}
-            <Card className="shadow-lg">
+            <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardHeader className="bg-gradient-to-r from-amber-50 to-amber-100">
                 <CardTitle className="text-2xl text-amber-800">
                   Budget Breakdown
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-4">
-                  {Object.entries(tripData.budget.breakdown).map(
-                    ([category, amount]) => (
-                      <div
-                        key={category}
-                        className="p-6 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors duration-300"
-                      >
-                        <p className="text-sm text-amber-600 font-medium capitalize">
-                          {category}
-                        </p>
-                        <p className="text-2xl font-bold text-amber-800">
-                          {amount} BDT
-                        </p>
-                      </div>
-                    ),
-                  )}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-4">
+                  <div className="flex items-center gap-4 bg-amber-50 p-4 rounded-lg">
+                    <div className="bg-amber-100 p-2 rounded-full">
+                      <Utensils className="h-6 w-6 text-amber-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-amber-600 font-medium">Food</p>
+                      <p className="font-semibold text-gray-800">
+                        {tripData.budget.breakdown.food} BDT
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 bg-amber-50 p-4 rounded-lg">
+                    <div className="bg-amber-100 p-2 rounded-full">
+                      <Home className="h-6 w-6 text-amber-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-amber-600 font-medium">
+                        Accommodation
+                      </p>
+                      <p className="font-semibold text-gray-800">
+                        {tripData.budget.breakdown.accommodation} BDT
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 bg-amber-50 p-4 rounded-lg">
+                    <div className="bg-amber-100 p-2 rounded-full">
+                      <Package className="h-6 w-6 text-amber-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-amber-600 font-medium">
+                        Miscellaneous
+                      </p>
+                      <p className="font-semibold text-gray-800">
+                        {tripData.budget.breakdown.miscellaneous} BDT
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 bg-amber-50 p-4 rounded-lg">
+                    <div className="bg-amber-100 p-2 rounded-full">
+                      <Bus className="h-6 w-6 text-amber-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-amber-600 font-medium">
+                        Transportation
+                      </p>
+                      <p className="font-semibold text-gray-800">
+                        {tripData.budget.breakdown.transportation} BDT
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -629,30 +792,30 @@ const TripPlan = (tripPlan: any) => {
             </Card>
 
             {/* Checkpoints */}
-            <Card className="shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-green-50 to-green-100">
-                <CardTitle className="text-2xl text-green-800">
+            <Card className="shadow-lg bg-white">
+              <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b">
+                <CardTitle className="text-2xl font-bold text-emerald-800">
                   Travel Checkpoints
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-green-50">
-                        <TableHead className="font-semibold text-green-800">
+                      <TableRow className="bg-emerald-50/50">
+                        <TableHead className="font-semibold text-emerald-700">
                           From
                         </TableHead>
-                        <TableHead className="font-semibold text-green-800">
+                        <TableHead className="font-semibold text-emerald-700">
                           To
                         </TableHead>
-                        <TableHead className="font-semibold text-green-800">
+                        <TableHead className="font-semibold text-emerald-700">
                           Departure
                         </TableHead>
-                        <TableHead className="font-semibold text-green-800">
+                        <TableHead className="font-semibold text-emerald-700">
                           Arrival
                         </TableHead>
-                        <TableHead className="font-semibold text-green-800">
+                        <TableHead className="font-semibold text-emerald-700">
                           Tips
                         </TableHead>
                       </TableRow>
@@ -661,26 +824,42 @@ const TripPlan = (tripPlan: any) => {
                       {tripData.checkpoints.map((checkpoint, index) => (
                         <TableRow
                           key={index}
-                          className="hover:bg-green-50 transition-colors duration-200"
+                          className="hover:bg-emerald-50/30 m-4 transition-colors duration-200"
                         >
-                          <TableCell className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-green-600" />
-                            {checkpoint.origin.location}
+                          <TableCell className="py-4">
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-4 w-4 text-emerald-600" />
+                              <span className="text-slate-700">
+                                {checkpoint.origin.location}
+                              </span>
+                            </div>
                           </TableCell>
-                          <TableCell className="flex items-center gap-2">
-                            <Navigation className="h-4 w-4 text-green-600" />
-                            {checkpoint.destination.location}
+                          <TableCell className="py-4">
+                            <div className="flex items-center gap-2">
+                              <Navigation className="h-4 w-4 text-emerald-600" />
+                              <span className="text-slate-700">
+                                {checkpoint.destination.location}
+                              </span>
+                            </div>
                           </TableCell>
-                          <TableCell className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-green-600" />
-                            {checkpoint.logistics.departure_time}
+                          <TableCell className="py-4">
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-emerald-600" />
+                              <span className="text-slate-700">
+                                {checkpoint.logistics.departure_time}
+                              </span>
+                            </div>
                           </TableCell>
-                          <TableCell className="flex items-center gap-2">
-                            <Plane className="h-4 w-4 text-green-600" />
-                            {checkpoint.logistics.arrival_time}
+                          <TableCell className="py-4">
+                            <div className="flex items-center gap-2">
+                              <Plane className="h-4 w-4 text-emerald-600" />
+                              <span className="text-slate-700">
+                                {checkpoint.logistics.arrival_time}
+                              </span>
+                            </div>
                           </TableCell>
-                          <TableCell>
-                            <div className="bg-green-50 p-2 rounded-lg text-sm">
+                          <TableCell className="py-4">
+                            <div className="bg-emerald-50 p-3 rounded-lg text-sm text-slate-700 shadow-sm border border-emerald-100">
                               {checkpoint.logistics.tips}
                             </div>
                           </TableCell>

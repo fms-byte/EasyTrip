@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation"; 
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
   UploadCloud,
@@ -10,6 +10,7 @@ import {
   Loader2,
   Heart,
   MessageSquare,
+  PenLine,
 } from "lucide-react";
 import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
@@ -47,7 +48,7 @@ export default function Page() {
     setLoading(true);
     try {
       const response = await axios.get(
-        `/api/blog?tripPlanId=${tripPlanId}&query=${searchQuery}`
+        `/api/blog?tripPlanId=${tripPlanId}&query=${searchQuery}`,
       );
       setBlogs(response.data.blogs);
       console.log(response.data.blogs);
@@ -82,20 +83,23 @@ export default function Page() {
             </ul>
           </nav>
         </div>
-        <Button onClick={() => setIsOpen(true)}>
-          <UploadCloud className="mr-2" /> Generate New Blog
-        </Button>
       </div>
 
-      <div className="flex space-x-4 mb-4">
-        <Input
-          type="text"
-          placeholder="Type a natural language search..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-        <Button onClick={fetchBlogs}>
-          <Search className="mr-2" /> Search Blogs
+      <div className="flex space-x-4 mb-4 justify-between">
+        <div className="flex space-x-4 ">
+          <Input
+            type="text"
+            placeholder="Type a natural language search..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <Button variant='secondary' onClick={fetchBlogs}>
+            <Search className="mr-2" /> Search Blogs
+          </Button>
+        </div>
+
+        <Button onClick={() => setIsOpen(true)}>
+          <PenLine className="mr-2" /> Generate New Blog
         </Button>
       </div>
 
@@ -113,10 +117,15 @@ export default function Page() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {blogs.map((blog, index) => (
-            <div key={index} className="bg-white border rounded-lg shadow-md overflow-hidden">
+            <div
+              key={index}
+              className="bg-white border rounded-lg shadow-md overflow-hidden"
+            >
               <div className="p-4">
                 {/* Blog Title */}
-                <h2 className="text-xl font-semibold mb-2">{blog.title || "Untitled Blog"}</h2>
+                <h2 className="text-xl font-semibold mb-2">
+                  {blog.title || "Untitled Blog"}
+                </h2>
                 {/* Small preview of blog content */}
                 <p className="text-gray-700 text-sm mb-4">
                   {blog.content.substring(0, 100)}...
@@ -141,7 +150,7 @@ export default function Page() {
                   </div>
                   {/* Preview Button */}
                   <Button
-                    variant="default"
+                    variant="outline"
                     onClick={() => setSelectedBlog(blog)}
                   >
                     Preview
@@ -160,7 +169,7 @@ export default function Page() {
           title="Blog Preview"
           description=""
         >
-          <div className="space-y-4">  
+          <div className="space-y-4">
             <ReactMarkdown>{selectedBlog?.content}</ReactMarkdown>
           </div>
         </ModalFullScreen>

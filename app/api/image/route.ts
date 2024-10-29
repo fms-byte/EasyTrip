@@ -8,8 +8,7 @@ import { feature } from "@turf/turf";
 
 // Initialize OpenAI client
 const openai = new OpenAI({
-  apiKey:
-    "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",
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 // Helper to generate embeddings using OpenAI
@@ -61,7 +60,7 @@ async function searchByEmbedding(
       //    const _res = _tbl.query().where(filter).limit(n).toArray();
       return _res;
     }
-    const _res = _tbl.search(queryEmbedding).limit(n).toArray();
+    const _res = _tbl.vectorSearch(queryEmbedding).limit(n).toArray();
     return _res;
   } else {
     return [];

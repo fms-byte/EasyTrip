@@ -3,15 +3,10 @@ import prisma from "@/prisma/prisma-client";
 import { OpenAI } from "openai";
 
 import * as lancedb from "@lancedb/lancedb";
-import * as arrow from "apache-arrow";
-import { feature } from "@turf/turf";
-import { title } from "process";
-import { stat } from "fs";
-
+ 
 // Initialize OpenAI client
 const openai = new OpenAI({
-  apiKey:
-    "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",
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 // Helper to generate embeddings using OpenAI
@@ -22,6 +17,7 @@ async function generateEmbedding(text) {
   });
   return response.data[0].embedding;
 }
+
 
 interface Trip {
   tripPlanId: string;
@@ -76,7 +72,7 @@ export async function POST(request: NextRequest) {
     
   try {
     const body = await request.json();
-    const { email, tripPlanId, name, content, title } = body;
+    const { email, tripPlanId, name, query, content, title } = body;
 
     if ( !tripPlanId) {
       return NextResponse.json(
@@ -118,7 +114,7 @@ export async function POST(request: NextRequest) {
 
     await prisma.notification.create({
       data: {
-        content: `New blog post created by ${name} for trip: ${tripPlan?.data?.name} : ${title}`, 
+        content: `New blog post created by ${name} for trip: ${tripPlan?.data?.trip_name} : ${title}`, 
         tripPlan:{
           connect: {
             id: tripPlanId,
@@ -137,13 +133,24 @@ export async function POST(request: NextRequest) {
   
     const uri = "/tmp/lancedb/";
     const db = await lancedb.connect(uri);
+
+
+    const queryEmbedding = await generateEmbedding(query);
+    // console.log(tableNames);
+    // let images = [];
+    // if(tableNames.includes("image")) { 
+    //   const _tbl = await db.openTable("image");
+    //         images = (await _tbl.search(queryEmbedding).limit(30).toArray())
+    //     .filter((image) => image.tripPlanId === tripPlanId)
+    // }
+ 
   
     const tableNames = await db.tableNames();
     console.log(tableNames);
     let images = [];
     if(tableNames.includes("image")) { 
       const _tbl = await db.openTable("image");
-            images = (await _tbl.query().limit(30).toArray())
+            images = (await _tbl.search(queryEmbedding).limit(30).toArray())
         .filter((image) => image.tripPlanId === tripPlanId && image.email === email)
         .slice(0, 3);
     }
@@ -154,9 +161,11 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: "user",
-          content: `You are ${name}, a travel blogger. Write a captivating travel blog about your recent trip titled: "${tripPlan?.data?.name}". Include details about your experience, the journey, and the group members: ${tripPlan?.members.map(member => member.name).join(", ")}. 
+          content: `You are ${name}, a travel blogger. Write a captivating travel blog about your recent trip titled: "${tripPlan?.data?.trip_name}". Include details about your experience, the journey, and the group members: ${tripPlan?.members.map(member => member.name).join(", ")}. 
           
           The trip information is provided below in JSON format: ${JSON.stringify(tripPlan)}.
+
+          User Query: ${query}.
           
           Try to extract stories from the included images, and enrich the blog with imagery-based details. Give the blog a personal touch and make it engaging for your readers.`,
         },

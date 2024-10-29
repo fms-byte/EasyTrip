@@ -17,7 +17,7 @@ RUN npm install prisma@latest --force
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Build the app
+# Build the app in Case you want see the Production build else you can replace it with npm run dev
 RUN npm run build
 
 # Expose the port the app runs on

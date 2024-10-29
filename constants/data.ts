@@ -59,7 +59,7 @@ export const navItems: NavItem[] = [
   },
   {
     title: "Ai Tour Helper",
-    href: "/trip/helper",
+    href: "/trip/ai-bot",
     icon: "analytics",
     label: "Ai Helper",
   },

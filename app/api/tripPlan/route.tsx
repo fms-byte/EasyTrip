@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server'
 const axios = require('axios');
 
-// const pythonServer = 'http://localhost:5000';
-
-const pythonServer = 'http://172.28.31.180:5000'
+ 
+const pythonServer = process.env.PYTHON_SERVER_URL;
 
  
 export async function GET(request: Request) {
@@ -63,7 +62,7 @@ async function getHotels(place:string) {
         method: 'post',
         url: 'https://google.serper.dev/places',
         headers: { 
-            'X-API-KEY': 'eedc6b3c24e1ecd3d4be0950fb9b85fd567a0096', 
+            'X-API-KEY':process.env.GOOGLE_SEARCH_API_KEY, 
             'Content-Type': 'application/json'
         },
         data: data
@@ -90,7 +89,7 @@ async function getRestaurants(place:string) {
         method: 'post',
         url: 'https://google.serper.dev/places',
         headers: { 
-            'X-API-KEY': 'eedc6b3c24e1ecd3d4be0950fb9b85fd567a0096', 
+            'X-API-KEY': process.env.GOOGLE_SEARCH_API_KEY,
             'Content-Type': 'application/json'
         },
         data: data

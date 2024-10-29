@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button"; 
 import { Input } from "@/components/ui/input";
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -196,88 +196,122 @@ const BlogGenerator = ({ email, name, tripPlanId }) => {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-6">
-      {/* Query Input and Generate Button */}
-     
-       
-         
+    <div className="flex flex-col space-y-6 p-6 max-h-[calc(100vh-8rem)] overflow-y-auto">
+      {/* Query Section */}
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Generate Your Blog</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row gap-4">
             <Input 
               type="text" 
-              placeholder="Enter your query..." 
+              placeholder="What would you like to write about?" 
               value={query} 
-              onChange={(e) => setQuery(e.target.value)} 
+              onChange={(e) => setQuery(e.target.value)}
+              className="flex-1"
             />
             <Button 
               onClick={handleGenerateBlog} 
               disabled={isGenerating || !query}
+              className="md:w-auto w-full"
             >
               {isGenerating ? 'Generating...' : 'Generate Blog'}
             </Button>
+          </div>
+        </CardContent>
+      </Card>
 
-
-        {/* Generated Content */}
-        {generatedContent && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Generated Blog</h3>
-          <Card className="p-4">
-            <CardContent>
-              <div className="space-y-4">
-                <h4 className="text-lg font-semibold">{generatedTitle}</h4>
-                <ReactMarkdown>{generatedContent}</ReactMarkdown>
-              </div>
-            </CardContent>
-          </Card>
-
-       </div>
- )}
- 
-      {/* Markdown Editor */}
+      {/* Generated Content Display */}
       {generatedContent && (
-        <Card className='p-4'>
-          <CardContent>
-            <div className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Generated Blog Preview</CardTitle>
+          </CardHeader>
+          <CardContent className="prose max-w-none">
+            <h2 className="text-xl font-semibold mb-4">{generatedTitle}</h2>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <ReactMarkdown>{generatedContent}</ReactMarkdown>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Editor Section */}
+      {generatedContent && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Edit Your Blog</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <Input
+              type="text"
+              placeholder="Blog Title"
+              value={editedTitle}
+              onChange={(e) => setEditedTitle(e.target.value)}
+              className="text-lg font-semibold"
+            />
+            
+            <div className="h-[400px] border rounded-lg overflow-hidden">
               <MdEditor
                 value={editedContent}
-                style={{ height: "500px" }}
+                style={{ height: "100%" }}
                 renderHTML={(text) => <ReactMarkdown>{text}</ReactMarkdown>}
                 onChange={handleContentChange}
+                className="w-full"
               />
-              {/* File Upload */}
-              <div className="space-y-2">
-                <Input 
-                  type="file" 
-                  multiple 
-                  onChange={handleFileChange} 
-                />
-                {/* Display selected files */}
-                {files.length > 0 && (
-                  <div className="grid gap-4">
-                    {files.map((file, index) => (
-                      <div key={index} className="flex items-center space-x-4">
-                        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded">
-                          <ImageIcon className="w-6 h-6 text-gray-500" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium truncate">{file.name}</p>
-                          <Progress value={progress[index]} className="h-2 mt-2" />
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeFile(index)}
-                          className="text-gray-500 hover:text-red-500"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <Button onClick={handlePostBlog} className="w-full">
-                Post Blog
-              </Button>
             </div>
+
+            {/* Image Upload Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="outline"
+                  onClick={() => document.getElementById('file-upload').click()}
+                  className="w-full md:w-auto"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Add Images
+                </Button>
+                <Input
+                  id="file-upload"
+                  type="file"
+                  multiple
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </div>
+
+              {/* File Preview */}
+              {files.length > 0 && (
+                <div className="grid gap-4">
+                  {files.map((file, index) => (
+                    <div key={index} className="flex items-center p-3 bg-gray-50 rounded-lg">
+                      <ImageIcon className="w-6 h-6 text-gray-500 mr-3" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{file.name}</p>
+                        <Progress value={progress[index]} size="sm" className="mt-2" />
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeFile(index)}
+                        className="ml-2"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Button 
+              onClick={handlePostBlog} 
+              className="w-full md:w-auto"
+            >
+              Publish Blog
+            </Button>
           </CardContent>
         </Card>
       )}

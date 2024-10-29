@@ -1,5 +1,6 @@
 import requests
 import json
+import os
 
 def getHotels(place):
     url = "https://google.serper.dev/places"
@@ -9,7 +10,7 @@ def getHotels(place):
         "gl": "bd"
     })
     headers = {
-    'X-API-KEY': 'eedc6b3c24e1ecd3d4be0950fb9b85fd567a0096',
+    'X-API-KEY': os.getenv('GOOGLE_SEARCH_API_KEY'),
     'Content-Type': 'application/json'
     }
 

@@ -22,7 +22,7 @@ const TripPlannerPage = () => {
   useEffect(() => {
     const fetchTripPlan = () => {
       try {
-        const storedTripPlan = localStorage.getItem("tripPlan");
+        const storedTripPlan = localStorage.getItem("tripPlanPreview");
         if (storedTripPlan) {
           setTripPlan(JSON.parse(storedTripPlan));
         }

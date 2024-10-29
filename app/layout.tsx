@@ -8,7 +8,7 @@ import "./globals.css";
 import { getServerSession } from "next-auth";
  
 const inter = Inter({ subsets: ["latin"] });
-
+ 
 export const metadata: Metadata = {
   title: "Easy Trip",
   description: "Easy Trip",
